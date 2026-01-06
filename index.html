@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Invisible Watermarks. Visible Ownership.</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Animated gradient + particles background -->
+  <div class="bg-gradient"></div>
+  <canvas id="bg-particles"></canvas>
+
+  <!-- Top navigation -->
+  <header class="top-nav">
+    <div class="logo">
+      <span class="logo-dot"></span>
+      <span>NovaMark</span>
+    </div>
+    <nav class="nav-links">
+      <a href="#hero">Home</a>
+      <a href="#watermark">Watermark</a>
+      <a href="#verify">Verify</a>
+      <a href="#features">Features</a>
+      <a href="#how-it-works">How it works</a>
+    </nav>
+  </header>
+
+  <main>
+    <!-- HERO SECTION -->
+    <section id="hero" class="hero section">
+      <div class="hero-content glass">
+        <h1 class="hero-title">Invisible Watermarks. Visible Ownership.</h1>
+        <p class="hero-subtitle">
+          Embed hidden ownership data into your images without changing how they look to the human eye. [web:5][web:15][web:21]
+        </p>
+        <div class="hero-actions">
+          <button class="btn primary" data-scroll="#watermark">
+            Watermark Image
+          </button>
+          <button class="btn ghost" data-scroll="#verify">
+            Verify Ownership
+          </button>
+        </div>
+        <div class="hero-meta">
+          <span class="pill">Client-side demo only</span>
+          <span class="pill">Invisible watermarking concept</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- WATERMARK IMAGE SECTION -->
+    <section id="watermark" class="section">
+      <div class="section-header">
+        <h2>Watermark Image</h2>
+        <p>Simulate embedding an invisible owner ID into your image.</p>
+      </div>
+
+      <div class="layout-grid">
+        <!-- Upload + controls -->
+        <div class="glass card">
+          <h3>Upload & Configure</h3>
+
+          <!-- Drag & drop area -->
+          <div id="wm-dropzone" class="dropzone">
+            <input type="file" id="wm-input" accept="image/*" hidden />
+            <div class="dropzone-inner">
+              <span class="drop-icon">⬆️</span>
+              <p>Drag & drop an image here</p>
+              <p class="drop-subtext">or click to browse</p>
+            </div>
+          </div>
+
+          <!-- Owner ID text input -->
+          <label class="field">
+            <span class="field-label">Owner ID / Handle</span>
+            <input
+              type="text"
+              id="wm-owner-id"
+              maxlength="64"
+              placeholder="@creator, email, or UUID"
+            />
+          </label>
+
+          <!-- Strength slider -->
+          <label class="field">
+            <div class="field-row">
+              <span class="field-label">Watermark strength</span>
+              <span id="wm-strength-label" class="field-label-soft">Medium</span>
+            </div>
+            <input
+              type="range"
+              id="wm-strength"
+              min="1"
+              max="100"
+              value="60"
+            />
+            <div class="field-scale">
+              <span>Low</span>
+              <span>High</span>
+            </div>
+          </label>
+
+          <!-- Apply button + fake loading -->
+          <button id="wm-apply-btn" class="btn primary full">
+            <span class="btn-label">Apply Invisible Watermark</span>
+            <span class="btn-spinner"></span>
+          </button>
+          <p class="hint">
+            This is a front-end simulation. No real watermarking algorithm runs here. [web:2][web:4][web:9]
+          </p>
+        </div>
+
+        <!-- Preview card -->
+        <div class="glass card">
+          <h3>Preview</h3>
+          <div class="preview-toggle-row">
+            <button
+              class="chip chip-active"
+              data-preview-mode="original"
+            >
+              Original
+            </button>
+            <button class="chip" data-preview-mode="watermarked">
+              Watermarked
+            </button>
+          </div>
+
+          <div class="preview-wrapper">
+            <div class="preview-placeholder" id="wm-preview-placeholder">
+              <span class="preview-icon">🖼️</span>
+              <p>Upload an image to preview</p>
+            </div>
+
+            <img id="wm-preview-original" class="preview-image" alt="Original preview" />
+            <img id="wm-preview-watermarked" class="preview-image" alt="Watermarked preview" />
+          </div>
+
+          <p class="preview-note">
+            Visuals remain unchanged; watermark lives in invisible data channels in real systems. [web:5][web:12][web:21]
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- VERIFY IMAGE SECTION -->
+    <section id="verify" class="section">
+      <div class="section-header">
+        <h2>Verify Image</h2>
+        <p>Check if an invisible watermark and owner ID can be recovered.</p>
+      </div>
+
+      <div class="layout-grid">
+        <!-- Upload -->
+        <div class="glass card">
+          <h3>Upload Image to Verify</h3>
+
+          <div id="vf-dropzone" class="dropzone">
+            <input type="file" id="vf-input" accept="image/*" hidden />
+            <div class="dropzone-inner">
+              <span class="drop-icon">🔍</span>
+              <p>Drop an image to verify</p>
+              <p class="drop-subtext">or click to browse</p>
+            </div>
+          </div>
+
+          <button id="vf-btn" class="btn primary full">
+            <span class="btn-label">Verify Watermark</span>
+            <span class="btn-spinner"></span>
+          </button>
+
+          <p class="hint">
+            In production, verification would decode embedded watermark data and validate it cryptographically. [web:5][web:21]
+          </p>
+        </div>
+
+        <!-- Result card -->
+        <div class="glass card result-card">
+          <h3>Verification Result</h3>
+
+          <div id="vf-status" class="status-pill status-idle">
+            Waiting for an image…
+          </div>
+
+          <div class="result-grid">
+            <div class="result-item">
+              <span class="result-label">Watermark detected</span>
+              <span id="vf-detected" class="result-value">–</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Owner ID</span>
+              <span id="vf-owner" class="result-value">–</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Confidence</span>
+              <span id="vf-confidence" class="result-value">–</span>
+            </div>
+          </div>
+
+          <!-- Animated bars for success -->
+          <div class="confidence-bars" id="vf-bars">
+            <span></span><span></span><span></span><span></span><span></span>
+          </div>
+
+          <p class="hint">
+            Confidence is randomly generated in this demo and does not reflect real model certainty. [web:8][web:17]
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section id="features" class="section">
+      <div class="section-header">
+        <h2>Platform Features</h2>
+        <p>Everything you need for robust, invisible ownership signals.</p>
+      </div>
+
+      <div class="features-grid">
+        <article class="glass feature-card">
+          <div class="feature-icon">☑️</div>
+          <h3>Invisible watermarking</h3>
+          <p>
+            Embed hidden identifiers into images so that viewers cannot visually detect them, yet algorithms can reliably recover ownership data. [web:4][web:9]
+          </p>
+        </article>
+
+        <article class="glass feature-card">
+          <div class="feature-icon">🪪</div>
+          <h3>Ownership proof</h3>
+          <p>
+            Link content to creators or organizations by encoding IDs, licenses, or provenance references into the media itself. [web:3][web:15]
+          </p>
+        </article>
+
+        <article class="glass feature-card">
+          <div class="feature-icon">🛡️</div>
+          <h3>Tamper detection</h3>
+          <p>
+            Detect suspicious edits when recovered watermark patterns deviate from what was originally embedded in the asset. [web:2][web:6]
+          </p>
+        </article>
+
+        <article class="glass feature-card">
+          <div class="feature-icon">📦</div>
+          <h3>Bulk watermarking</h3>
+          <p>
+            Process large image batches in production pipelines where each asset receives a consistent yet unique invisible watermark. [web:12][web:21]
+          </p>
+        </article>
+
+        <article class="glass feature-card">
+          <div class="feature-icon">🌐</div>
+          <h3>Public verification</h3>
+          <p>
+            Allow anyone to verify whether an image carries a valid watermark and obtain public ownership information when appropriate. [web:3][web:21]
+          </p>
+        </article>
+      </div>
+    </section>
+
+    <!-- HOW IT WORKS -->
+    <section id="how-it-works" class="section">
+      <div class="section-header">
+        <h2>How it works</h2>
+        <p>A simple flow designed for creators, platforms, and tools.</p>
+      </div>
+
+      <div class="steps-grid">
+        <div class="glass step-card">
+          <div class="step-number">01</div>
+          <h3>Upload image</h3>
+          <p>
+            Start with any supported image and choose an owner ID or reference to embed alongside it as hidden metadata. [web:5][web:15]
+          </p>
+        </div>
+
+        <div class="glass step-card">
+          <div class="step-number">02</div>
+          <h3>Embed invisible data</h3>
+          <p>
+            Watermarking algorithms subtly modify pixel values or frequency components to inject robust, machine-readable signals. [web:2][web:6][web:21]
+          </p>
+        </div>
+
+        <div class="glass step-card">
+          <div class="step-number">03</div>
+          <h3>Verify anytime</h3>
+          <p>
+            Anyone with a verifier can later scan the image to recover the watermark and confirm ownership or trace distribution. [web:3][web:9][web:12]
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <p>
+        NovaMark is a conceptual invisible image watermarking & verification platform prototype for demonstration purposes only. [web:5][web:21]
+      </p>
+      <p class="footer-note">
+        Built as a hackathon-style front-end demo. No real cryptography or watermarking runs in this browser mock. [web:2][web:4]
+      </p>
+      <a
+        href="https://github.com/your-username/novamark"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="footer-link"
+      >
+        GitHub repository (placeholder)
+      </a>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
