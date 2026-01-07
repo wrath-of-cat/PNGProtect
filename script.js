@@ -99,20 +99,57 @@ const wmApplyBtn = document.getElementById("wm-apply-btn");
 const wmPreviewPlaceholder = document.getElementById("wm-preview-placeholder");
 const wmPreviewOriginal = document.getElementById("wm-preview-original");
 const wmPreviewWatermarked = document.getElementById("wm-preview-watermarked");
+const wmDownloadBtn = document.getElementById("wm-download-btn");
 
 // Internal "database" of watermarked images (keyed by fake hash)
-const watermarkStore = new Map();
+const STORAGE_KEY = "pngprotect.watermarkStore.v1";
+
+function loadStoreFromStorage() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return new Map();
+    const arr = JSON.parse(raw);
+    return new Map(Array.isArray(arr) ? arr : []);
+  } catch (e) {
+    console.warn("Failed to load watermark store:", e);
+    return new Map();
+  }
+}
+
+function saveStoreToStorage(map) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(map.entries())));
+  } catch (e) {
+    console.warn("Failed to save watermark store:", e);
+  }
+}
+
+const watermarkStore = loadStoreFromStorage();
 
 // Utility that builds a lightweight "hash" based on file name + size
 async function hashFile(file) {
-  // WARNING: This is NOT cryptographically secure; used only as demo stub.
+  // Content-only hash: use SHA-256 of the file bytes so downloaded
+  // copies will produce the same key when re-uploaded.
   const arrayBuffer = await file.arrayBuffer();
-  const view = new Uint8Array(arrayBuffer);
-  let hash = 0;
-  for (let i = 0; i < view.length; i += Math.ceil(view.length / 512)) {
-    hash = (hash * 31 + view[i]) >>> 0;
+  try {
+    if (window.crypto && crypto.subtle && crypto.subtle.digest) {
+      const digest = await crypto.subtle.digest("SHA-256", arrayBuffer);
+      const hex = Array.from(new Uint8Array(digest))
+        .map((b) => b.toString(16).padStart(2, "0"))
+        .join("");
+      return hex;
+    }
+  } catch (e) {
+    console.warn("SubtleCrypto digest failed, falling back to sample-hash", e);
   }
-  return `${file.name}-${file.size}-${hash}`;
+
+  // Fallback: deterministic sample-based hash derived from bytes only
+  const view = new Uint8Array(arrayBuffer);
+  let h = 0;
+  for (let i = 0; i < view.length; i += Math.max(1, Math.ceil(view.length / 512))) {
+    h = (h * 31 + view[i]) >>> 0;
+  }
+  return `${view.length}-${h}`;
 }
 
 // Utility to show selected image
@@ -186,6 +223,10 @@ setupDropzone(wmDropzone, wmInput, (file) => {
   loadImagePreview(file, wmPreviewOriginal);
   wmPreviewWatermarked.src = "";
   wmPreviewWatermarked.classList.remove("visible");
+  if (wmDownloadBtn) {
+    wmDownloadBtn.disabled = true;
+    delete wmDownloadBtn.dataset.filename;
+  }
 });
 
 // Preview toggle (Original vs Watermarked) micro-interaction
@@ -241,9 +282,19 @@ wmApplyBtn.addEventListener("click", async () => {
     strength,
     timestamp: Date.now(),
   });
+  // Persist to localStorage so verification survives page reloads
+  saveStoreToStorage(watermarkStore);
 
   // For demo we just reuse the original image; in real system watermarked binary differs
   loadImagePreview(currentWMFile, wmPreviewWatermarked);
+
+  // Enable download button and set a reasonable filename
+  if (wmDownloadBtn) {
+    const safeOwner = ownerId.replace(/[^a-zA-Z0-9-_.]/g, "-") || "owner";
+    const downloadFilename = `${safeOwner}-${currentWMFile.name}`;
+    wmDownloadBtn.disabled = false;
+    wmDownloadBtn.dataset.filename = downloadFilename;
+  }
 
   // Activate watermarked view
   previewToggleButtons.forEach((b) => {
@@ -341,6 +392,21 @@ vfBtn.addEventListener("click", async () => {
   vfBtn.classList.remove("loading");
   vfBtn.disabled = false;
 });
+
+// Download button behavior for watermarked preview
+if (wmDownloadBtn) {
+  wmDownloadBtn.addEventListener("click", () => {
+    const src = wmPreviewWatermarked.src;
+    if (!src) return;
+    const filename = wmDownloadBtn.dataset.filename || "watermarked.png";
+    const a = document.createElement("a");
+    a.href = src;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  });
+}
 
 // Optional: small shake animation via class toggled above
 const style = document.createElement("style");
