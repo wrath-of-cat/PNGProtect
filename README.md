@@ -1,4 +1,6 @@
-# PNGProtect 🛡️
+
+
+ PNGProtect 🛡️
 
 [![GitHub Stars](https://img.shields.io/github/stars/ApurveKaranwal/PNGProtect?style=social)](https://github.com/ApurveKaranwal/PNGProtect)
 [![License](https://img.shields.io/github/license/ApurveKaranwal/PNGProtect)](LICENSE)
@@ -47,18 +49,18 @@ cd backend
 pip install -r requirements.txt
 uvicorn app.main:app --reload
 
+---
+
 The backend server will start in development mode.
 
 🌐 Live Demo
 Frontend
-
 🔗 https://pngprotect.netlify.app/
 
 Backend API
-
 🔗 https://pngprotect.onrender.com/
-🛡️ Security Considerations
 
+🛡️ Security Considerations
 PNGProtect adds a strong layer of security, but best practices must still be followed:
 
 Key Management
@@ -71,34 +73,34 @@ Layered Security
 For maximum protection, combine PNGProtect with authentication and access-control mechanisms.
 
 🤝 Contributing
-
 Contributions are welcome and appreciated!
 They help improve PNGProtect and strengthen the open-source community.
 
 Contribution Workflow
+Fork the repository
 
-1.Fork the repository
+Create a feature branch
 
-2.Create a feature branch
+bash
+Copy code
 git checkout -b feature/AmazingFeature
+Commit your changes
 
-3.Commit your changes
+bash
+Copy code
 git commit -m "Add AmazingFeature"
+Push to your branch
 
-4.Push to your branch
+bash
+Copy code
 git push origin feature/AmazingFeature
+Open a Pull Request
 
-5.Open a Pull Request
 ⚠️ Please do not commit directly to the main branch.
 
 📄 License
-
 This project is licensed under the MIT License.
 See the LICENSE file for more details.
 
 ❤️ Credits
-
 Built with passion by Team ZeroGlitch
-
-
-
