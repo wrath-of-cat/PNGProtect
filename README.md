@@ -1,64 +1,104 @@
-# PNGProtect
+# PNGProtect 🛡️
 
-[![GitHub stars](https://img.shields.io/github/stars/ApurveKaranwal/PNGProtect?style=social)](https://github.com/ApurveKaranwal/PNGProtect)
+[![GitHub Stars](https://img.shields.io/github/stars/ApurveKaranwal/PNGProtect?style=social)](https://github.com/ApurveKaranwal/PNGProtect)
 [![License](https://img.shields.io/github/license/ApurveKaranwal/PNGProtect)](LICENSE)
-[![Issues](https://img.shields.io/github/issues/ApurveKaranwal/PNGProtect)](https://github.com/ApurveKaranwa;/PNGProtect/issues)
+[![Open Issues](https://img.shields.io/github/issues/ApurveKaranwal/PNGProtect)](https://github.com/ApurveKaranwal/PNGProtect/issues)
 
-**PNGProtect** is a lightweight library/tool designed to protect PNG images from unauthorized downloading, screenshots, and reverse-engineering. It applies advanced obfuscation techniques, invisible overlays, and dynamic watermarking to safeguard your digital assets.
+**PNGProtect** is a lightweight image protection tool designed to safeguard PNG images from unauthorized downloading, screenshots, and reverse-engineering.  
+It leverages advanced obfuscation techniques, invisible overlays, and dynamic watermarking to protect digital assets **without compromising visual quality**.
+
+Ideal for **digital artists, photographers, SaaS platforms, and content creators** who require robust image protection across platforms.
+
+---
 
 ## ✨ Features
 
-- **Invisible Protection Layers**: Embed hidden data and overlays that deter scraping tools.
-- **Dynamic Watermarking**: Automatically adds user/session-specific watermarks.
-- **Screenshot Resistance**: Detects and disrupts common screenshot methods.
-- **Cross-Platform**: Works on web, desktop, and mobile environments.
-- **Zero Dependencies**: Lightweight with no external libraries required.
-- **Customizable**: Easy configuration for different protection levels.
+- **Invisible Protection Layers**  
+  Embeds hidden metadata and overlays to deter scraping and reverse-engineering tools.
 
-Perfect for digital artists, photographers, SaaS platforms, and content creators who need robust image protection without compromising visual quality.
+- **Dynamic Watermarking**  
+  Automatically generates user- or session-specific watermarks.
+
+- **Screenshot Resistance**  
+  Detects and disrupts common screenshot and screen-capture methods.
+
+- **Cross-Platform Support**  
+  Works seamlessly across **web, desktop, and mobile** environments.
+
+- **Zero Dependencies**  
+  Lightweight and efficient with no external runtime dependencies.
+
+- **Highly Customizable**  
+  Flexible configuration options for different security levels and use cases.
+
+---
 
 ## 🚀 Quick Start
 
-### Installation
+### Prerequisites
+- Python 3.9+
+- pip
+- Uvicorn
+
+### Installation & Run Locally
+
 ```bash
 cd backend
 pip install -r requirements.txt
 uvicorn app.main:app --reload
-```
-Follow above steps to run PNGProtect in your local machine
 
-## 🛡️ Security Considerations
-- While PNGProtect adds a strong layer of security, always remember:
-- Key Management: Never hardcode your encryption keys.
-- Backup: Keep copies of your original files; encryption is irreversible if the key is lost.
+The backend server will start in development mode.
 
-## 🤝 Contributing
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create.
-- Fork the Project
-- Create your Feature Branch (git checkout -b feature/AmazingFeature)
-- Commit your Changes (git commit -m 'Add some AmazingFeature')
-- Push to the Branch (git push origin feature/AmazingFeature)
-- Open a Pull Request
+🌐 Live Demo
+Frontend
 
----
+🔗 https://pngprotect.netlify.app/
+
+Backend API
+
+🔗 https://pngprotect.onrender.com/
+🛡️ Security Considerations
+
+PNGProtect adds a strong layer of security, but best practices must still be followed:
+
+Key Management
+Never hardcode encryption or protection keys in source code.
+
+Backups
+Always retain original image backups. Some protection methods may be irreversible if keys are lost.
+
+Layered Security
+For maximum protection, combine PNGProtect with authentication and access-control mechanisms.
+
+🤝 Contributing
+
+Contributions are welcome and appreciated!
+They help improve PNGProtect and strengthen the open-source community.
+
+Contribution Workflow
+
+1.Fork the repository
+
+2.Create a feature branch
+git checkout -b feature/AmazingFeature
+
+3.Commit your changes
+git commit -m "Add AmazingFeature"
+
+4.Push to your branch
+git push origin feature/AmazingFeature
+
+5.Open a Pull Request
+⚠️ Please do not commit directly to the main branch.
+
+📄 License
+
+This project is licensed under the MIT License.
+See the LICENSE file for more details.
+
+❤️ Credits
+
+Built with passion by Team ZeroGlitch
 
 
-## Live Website link:
-Frontend 
-```bash
-https://pngprotect.netlify.app/
-```
 
-Backend
-```bash
-https://pngprotect.onrender.com/
-```
----
-
-
-## 📄 License
-Distributed under the MIT License. See LICENSE for more information.
-
----
-
-## Built with ❤️ by Team ZeroGlitch
