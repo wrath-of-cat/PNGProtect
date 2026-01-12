@@ -4,3 +4,5 @@ python-multipart
 Pillow
 opencv-python
 numpy
+web3
+python-dotenv

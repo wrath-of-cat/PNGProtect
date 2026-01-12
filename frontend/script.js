@@ -511,6 +511,204 @@ wmApplyBtn.addEventListener("click", async () => {
 // Verify section logic
 // =============================
 
+// Web3 / Registry state
+let connectedAccount = null;
+let registryAbi = null;
+let registryAddress = null;
+let lastExtractedText = null;
+let lastWatermarkFound = false;
+
+const WALLET_STORAGE_KEY = "pngprotect.walletConnection.v1";
+
+const connectWalletBtn = document.getElementById("connect-wallet-btn");
+const disconnectWalletBtn = document.getElementById("disconnect-wallet-btn");
+const walletAddressSpan = document.getElementById("wallet-address");
+const registerBtn = document.getElementById("register-onchain-btn");
+const registerStatus = document.getElementById("register-status");
+
+async function fetchRegistryAbi() {
+  try {
+    const res = await fetch("http://localhost:8000/registry/abi");
+    if (!res.ok) {
+      console.error("Failed to fetch registry ABI:", res.status);
+      return null;
+    }
+    const json = await res.json();
+    console.log("Registry ABI response:", json);
+    registryAbi = json.abi || json;
+    registryAddress = json.contract_address || json.contractAddress || json.address || null;
+    console.log("Registry Address:", registryAddress, "ABI:", registryAbi ? "loaded" : "not loaded");
+    return json;
+  } catch (e) {
+    console.error("Failed to fetch registry ABI:", e);
+    return null;
+  }
+}
+
+async function connectWallet() {
+  if (!window.ethereum) {
+    alert("MetaMask not detected. Install MetaMask to use on-chain registration.");
+    return;
+  }
+  try {
+    // Request accounts - this should trigger MetaMask popup
+    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    connectedAccount = accounts && accounts[0];
+    if (connectedAccount) {
+      const displayAddr = connectedAccount.slice(0, 6) + "..." + connectedAccount.slice(-4);
+      walletAddressSpan.textContent = displayAddr;
+      connectWalletBtn.style.display = "none";
+      disconnectWalletBtn.style.display = "inline-block";
+      console.log("Connected to wallet:", connectedAccount);
+      // Store wallet connection state
+      localStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify({ account: connectedAccount }));
+    }
+    await fetchRegistryAbi();
+    if (lastWatermarkFound) registerBtn.disabled = false;
+  } catch (e) {
+    console.error("Wallet connect failed:", e);
+    if (e.code === 4001) {
+      console.log("User rejected the connection request");
+    }
+  }
+}
+
+function disconnectWallet() {
+  connectedAccount = null;
+  walletAddressSpan.textContent = "Not connected";
+  connectWalletBtn.style.display = "inline-block";
+  disconnectWalletBtn.style.display = "none";
+  registerBtn.disabled = true;
+  registerStatus.textContent = "Not registered";
+  // Clear wallet connection state from storage
+  localStorage.removeItem(WALLET_STORAGE_KEY);
+  console.log("Wallet disconnected");
+}
+
+// =============================
+// MetaMask Event Listeners
+// Listen for account/chain changes
+// =============================
+function setupMetaMaskListeners() {
+  if (!window.ethereum) return;
+  
+  // Listen for account changes
+  window.ethereum.on("accountsChanged", (accounts) => {
+    console.log("MetaMask accounts changed:", accounts);
+    if (accounts && accounts.length > 0) {
+      // Account was switched in MetaMask
+      connectedAccount = accounts[0];
+      const displayAddr = connectedAccount.slice(0, 6) + "..." + connectedAccount.slice(-4);
+      walletAddressSpan.textContent = displayAddr;
+      connectWalletBtn.style.display = "none";
+      disconnectWalletBtn.style.display = "inline-block";
+      localStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify({ account: connectedAccount }));
+      console.log("Account switched to:", connectedAccount);
+    } else {
+      // User disconnected from MetaMask
+      console.log("MetaMask disconnected by user");
+      disconnectWallet();
+    }
+  });
+  
+  // Listen for chain/network changes
+  window.ethereum.on("chainChanged", (chainId) => {
+    console.log("MetaMask chain changed to:", chainId);
+  });
+}
+
+setupMetaMaskListeners();
+
+if (connectWalletBtn) {
+  connectWalletBtn.addEventListener("click", connectWallet);
+}
+
+if (disconnectWalletBtn) {
+  disconnectWalletBtn.addEventListener("click", disconnectWallet);
+}
+
+// =============================
+// Wallet Initialization on Page Load
+// Clear any residual wallet data to ensure fresh state
+// =============================
+function initializeWalletState() {
+  // Always start with wallet disconnected on page load
+  // User must explicitly click "Connect Wallet" each time
+  localStorage.removeItem(WALLET_STORAGE_KEY);
+  connectedAccount = null;
+  walletAddressSpan.textContent = "Not connected";
+  connectWalletBtn.style.display = "inline-block";
+  disconnectWalletBtn.style.display = "none";
+  registerBtn.disabled = true;
+  registerStatus.textContent = "Not registered";
+  console.log("Wallet state initialized: disconnected");
+}
+
+// Initialize wallet state when page loads
+document.addEventListener("DOMContentLoaded", initializeWalletState);
+// Also initialize immediately if DOM is already loaded
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeWalletState);
+} else {
+  initializeWalletState();
+}
+
+if (registerBtn) {
+  registerBtn.addEventListener("click", async () => {
+    if (!connectedAccount) {
+      console.log("No account connected, connecting wallet...");
+      await connectWallet();
+      if (!connectedAccount) return;
+    }
+    if (!lastWatermarkFound || !lastExtractedText) {
+      registerStatus.textContent = "No watermark available to register";
+      return;
+    }
+
+    registerBtn.disabled = true;
+    registerStatus.textContent = "Preparing transaction…";
+
+    try {
+      if (!registryAbi || !registryAddress) {
+        console.log("Fetching registry ABI...");
+        await fetchRegistryAbi();
+      }
+      
+      if (!registryAbi || !registryAddress) {
+        const errMsg = !registryAddress 
+          ? "⚠️ No CONTRACT_ADDRESS set on server. Deploy OwnershipRegistry.sol and set CONTRACT_ADDRESS env var." 
+          : "⚠️ Registry ABI not loaded.";
+        registerStatus.textContent = errMsg;
+        console.error(errMsg);
+        registerBtn.disabled = false;
+        return;
+      }
+
+      console.log("Creating contract instance at", registryAddress);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(registryAddress, registryAbi, signer);
+
+      // keccak256 of the extracted text (utf8)
+      const uuidHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(lastExtractedText));
+      console.log("UUID:", lastExtractedText, "Hash:", uuidHash);
+
+      registerStatus.textContent = "Sending transaction…";
+      const tx = await contract.register(uuidHash);
+      console.log("Transaction sent:", tx.hash);
+      registerStatus.textContent = `Pending tx ${tx.hash.slice(0, 10)}…`;
+      await tx.wait();
+      registerStatus.textContent = `✓ Registered (${tx.hash.slice(0, 10)}…)`;
+      console.log("Transaction confirmed!");
+    } catch (e) {
+      console.error("Register error:", e);
+      registerStatus.textContent = e && e.message ? e.message.substring(0, 60) : "Registration failed";
+    } finally {
+      registerBtn.disabled = false;
+    }
+  });
+}
+
 const vfDropzone = document.getElementById("vf-dropzone");
 const vfInput = document.getElementById("vf-input");
 const vfBtn = document.getElementById("vf-btn");
@@ -569,16 +767,20 @@ vfBtn.addEventListener("click", async () => {
     // Extract values from response
     const watermarkFound = result.watermark_found;
     const ownerID = result.owner_id || "Unknown";
-    const extractedText = result.extracted_text || "Unknown";
+    const extractedText = result.extracted_text || null;
     const matchRatio = result.match_ratio || 0;
     const confidence = result.confidence || 0;
+
+    // Save for on-chain registration
+    lastExtractedText = extractedText;
+    lastWatermarkFound = !!watermarkFound;
 
     // Display results
     if (watermarkFound) {
       vfStatus.textContent = "✓ Watermark verified";
       vfStatus.className = "status-pill status-success";
       vfDetected.textContent = "Yes";
-      vfOwner.textContent = ownerID !== "Unknown" ? ownerID : extractedText;
+      vfOwner.textContent = ownerID !== "Unknown" ? ownerID : extractedText || "Unknown";
       vfConfidence.textContent = `${confidence}%`;
       console.log(`Watermark found - Owner: ${ownerID}, Extracted: ${extractedText}, Match: ${matchRatio}`);
     } else {
@@ -588,6 +790,18 @@ vfBtn.addEventListener("click", async () => {
       vfOwner.textContent = "None";
       vfConfidence.textContent = `${confidence}%`;
       console.log("No watermark found");
+    }
+
+    // Enable register UI only when both watermark exists and wallet is connected
+    if (watermarkFound && connectedAccount) {
+      registerBtn.disabled = false;
+      registerStatus.textContent = "Ready to register";
+    } else if (watermarkFound) {
+      registerBtn.disabled = true;
+      registerStatus.textContent = "Connect wallet to register";
+    } else {
+      registerBtn.disabled = true;
+      registerStatus.textContent = "Not registered";
     }
 
     // Brief accent animation on bars to emphasize result

@@ -25,6 +25,11 @@
       <a href="#features">Features</a>
       <a href="#how-it-works">How it works</a>
     </nav>
+    <div class="wallet-area">
+      <button id="connect-wallet-btn" class="btn ghost">Connect Wallet</button>
+      <button id="disconnect-wallet-btn" class="btn ghost" style="display:none;">Disconnect</button>
+      <span id="wallet-address" class="wallet-address">Not connected</span>
+    </div>
   </header>
 
   <main>
@@ -205,6 +210,11 @@
           <!-- Animated bars for success -->
           <div class="confidence-bars" id="vf-bars">
             <span></span><span></span><span></span><span></span><span></span>
+          </div>
+
+          <div style="margin-top:1rem; display:flex; gap:8px; align-items:center;">
+            <button id="register-onchain-btn" class="btn primary" disabled>Register Ownership On-Chain</button>
+            <div id="register-status" style="font-size:0.9rem;color:#94a3b8;">Not registered</div>
           </div>
 
           <p class="hint">
@@ -446,6 +456,7 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/ethers/dist/ethers.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
