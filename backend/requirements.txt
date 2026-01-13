@@ -4,3 +4,11 @@ python-multipart
 Pillow
 opencv-python
 numpy
+scipy
+scikit-learn
+web3
+python-dotenv
+email-validator
+PyJWT
+passlib
+bcrypt

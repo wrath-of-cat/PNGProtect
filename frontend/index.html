@@ -21,10 +21,26 @@
       <a href="#hero">Home</a>
       <a href="#watermark">Watermark</a>
       <a href="#verify">Verify</a>
+      <a href="#detect">Detect Tampering</a>
       <a href="#strip">Clean</a>
       <a href="#features">Features</a>
       <a href="#how-it-works">How it works</a>
     </nav>
+    <div class="user-area">
+      <!-- Authentication buttons (shown when not logged in) -->
+      <a href="login.html" id="login-btn" class="btn ghost">Login</a>
+      <a href="register.html" id="register-btn" class="btn primary">Sign Up</a>
+      
+      <!-- User info (shown when logged in) -->
+      <span id="user-welcome" class="user-name" style="display: none;">Welcome, User</span>
+      <a href="dashboard.html" id="dashboard-link" class="btn ghost" style="display: none;">Dashboard</a>
+      <button id="logout-btn" class="btn ghost" style="display: none;">Logout</button>
+      
+      <!-- Wallet connection (blockchain feature) -->
+      <button id="connect-wallet-btn" class="btn ghost">Connect Wallet</button>
+      <button id="disconnect-wallet-btn" class="btn ghost" style="display:none;">Disconnect</button>
+      <span id="wallet-address" class="wallet-address">Not connected</span>
+    </div>
   </header>
 
   <main>
@@ -41,6 +57,10 @@
           <button class="btn ghost" data-scroll="#verify">
             Verify Ownership
           </button>
+          <!-- Dashboard button (shown when logged in) -->
+          <a href="dashboard.html" id="hero-dashboard-btn" class="btn ghost" style="display: none;">
+            My Dashboard
+          </a>
         </div>
         <div class="hero-meta">
           <span class="pill">Client-side demo only</span>
@@ -207,13 +227,131 @@
             <span></span><span></span><span></span><span></span><span></span>
           </div>
 
+          <div style="margin-top:1rem; display:flex; gap:8px; align-items:center;">
+            <button id="register-onchain-btn" class="btn primary" disabled>Register Ownership On-Chain</button>
+            <div id="register-status" style="font-size:0.9rem;color:#94a3b8;">Not registered</div>
+          </div>
+
           <p class="hint">
             Confidence is randomly generated in this demo and does not reflect real model certainty.
           </p>
         </div>
       </div>
     </section>
+    <!-- DETECT TAMPERING SECTION -->
+    <section id="detect" class="section">
+      <div class="section-header">
+        <h2>Detect Watermark Tampering</h2>
+        <p>Analyze if an image has been tampered with or if the watermark has been removed.</p>
+      </div>
 
+      <div class="layout-grid">
+        <!-- Upload & Analysis Controls -->
+        <div class="glass card">
+          <h3>Upload Image to Analyze</h3>
+
+          <div id="det-dropzone" class="dropzone">
+            <input type="file" id="det-input" accept="image/*" hidden />
+            <div class="dropzone-inner">
+              <span class="drop-icon">🔬</span>
+              <p>Drop an image for forensic analysis</p>
+              <p class="drop-subtext">or click to browse</p>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0;">
+            <button id="det-full-btn" class="btn primary" style="flex: 1; min-width: 120px;">
+              <span class="btn-label">Full Analysis</span>
+              <span class="btn-spinner"></span>
+            </button>
+            <button id="det-fast-btn" class="btn ghost" style="flex: 1; min-width: 120px;">
+              <span class="btn-label">Fast Forensics</span>
+              <span class="btn-spinner"></span>
+            </button>
+          </div>
+
+          <p class="hint">
+            Full Analysis: Combines forensic methods with ML detection (200-500ms).<br>
+            Fast Forensics: Rule-based detection only, instant results (100-300ms).
+          </p>
+        </div>
+
+        <!-- Results Display -->
+        <div class="glass card result-card">
+          <h3>Tampering Analysis Results</h3>
+
+          <div id="det-status" class="status-pill status-idle">
+            Waiting for an image…
+          </div>
+
+          <!-- Confidence Score Display -->
+          <div id="det-confidence-container" style="display: none; margin: 1.5rem 0;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+              <span style="font-weight: 600;">Tampering Confidence</span>
+              <span id="det-confidence-value" class="confidence-badge">0%</span>
+            </div>
+            <div class="confidence-bar">
+              <div id="det-confidence-fill" class="confidence-fill" style="width: 0%;"></div>
+            </div>
+            <p id="det-confidence-level" style="font-size: 0.9rem; color: var(--text-soft); margin-top: 0.5rem; margin-bottom: 0;">
+              Likelihood: Unknown
+            </p>
+          </div>
+
+          <!-- Likelihood Badge -->
+          <div id="det-verdict-container" style="display: none; margin: 1.5rem 0; padding: 1rem; background: rgba(148, 163, 184, 0.1); border-radius: 12px; border-left: 4px solid var(--accent-blue);">
+            <div style="display: flex; align-items: center; gap: 0.75rem;">
+              <span id="det-verdict-icon" style="font-size: 1.5rem;">❓</span>
+              <div>
+                <div style="font-weight: 600;" id="det-verdict-title">Analysis Status</div>
+                <div style="font-size: 0.9rem; color: var(--text-soft);" id="det-verdict-text">Analyzing image...</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Detected Techniques -->
+          <div id="det-techniques-container" style="display: none; margin: 1.5rem 0;">
+            <h4 style="margin: 0 0 0.75rem 0; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-soft);">Detected Artifacts</h4>
+            <div id="det-techniques-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
+          </div>
+
+          <!-- Forensic Explanation -->
+          <div id="det-explanation-container" style="display: none; margin: 1.5rem 0; padding: 1rem; background: rgba(168, 85, 247, 0.1); border-radius: 12px;">
+            <h4 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; color: var(--accent-purple);">Forensic Analysis</h4>
+            <p id="det-explanation-text" style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text-soft);"></p>
+          </div>
+
+          <!-- Technical Summary -->
+          <div id="det-technical-container" style="display: none; margin: 1.5rem 0; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 12px;">
+            <h4 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; color: var(--accent-blue);">Technical Details</h4>
+            <pre id="det-technical-text" style="margin: 0; font-size: 0.8rem; color: var(--text-soft); overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', monospace; line-height: 1.4;"></pre>
+          </div>
+
+          <!-- Toggle Technical Details Button -->
+          <button id="det-toggle-technical" class="btn ghost full" style="display: none; margin-top: 1rem;">
+            Show Technical Details
+          </button>
+        </div>
+      </div>
+
+      <div class="workflow-info">
+        <h3>How Tampering Detection Works</h3>
+        <p>
+          Our detection system uses a <strong>hybrid approach</strong> combining forensic analysis and machine learning:
+        </p>
+        <ul style="color: var(--text-soft); line-height: 1.8;">
+          <li><strong>Blur Detection:</strong> Analyzes Laplacian variance to detect image smoothing or blur effects.</li>
+          <li><strong>Noise Inconsistency:</strong> Detects unnatural noise patterns that indicate post-processing.</li>
+          <li><strong>Compression Artifacts:</strong> Identifies JPEG blocking and compression anomalies.</li>
+          <li><strong>Edge Anomalies:</strong> Finds unusual edge density that suggests watermark removal.</li>
+          <li><strong>Frequency Analysis:</strong> Uses FFT to detect frequency domain artifacts.</li>
+          <li><strong>ML Classification:</strong> Trained model uses 40+ statistical features for advanced detection.</li>
+        </ul>
+        <p style="margin-bottom: 0;">
+          The system provides a <strong>confidence score (0-100%)</strong> indicating the likelihood of watermark tampering, along with specific artifacts detected and human-readable explanations.
+        </p>
+      </div>
+    </section>
     <!-- STRIP METADATA SECTION -->
     <section id="strip" class="section">
       <div class="section-header">
@@ -446,6 +584,7 @@
     </div>
   </footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="script.js"></script>
 </body>
 </html>

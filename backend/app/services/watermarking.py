@@ -1,5 +1,4 @@
 import io
-import numpy as np
 from PIL import Image
 
 def load_image_from_bytes(raw_bytes: bytes) -> Image.Image:
@@ -25,20 +24,33 @@ def embed_watermark_lsb(image: Image.Image, watermark_text: str, strength: int =
     # Simple redundancy based on strength
     binary_data = binary_data * strength 
     
-    pixels = np.array(image, dtype=np.uint16)  # Use uint16 to avoid overflow
-    original_shape = pixels.shape
-    flat = pixels.flatten()
+    # Get pixel data as list
+    pixels = list(image.getdata())
+    width, height = image.size
     
-    if len(binary_data) > len(flat):
-        raise ValueError(f"Image too small for this strength/text. Need {len(binary_data)} bits but only have {len(flat)} pixels.")
+    if len(binary_data) > len(pixels) * 3:  # 3 channels per pixel
+        raise ValueError(f"Image too small for this strength/text. Need {len(binary_data)} bits but only have {len(pixels) * 3} channels.")
 
-    for i in range(len(binary_data)):
-        # Clear the LSB and set it to the watermark bit
-        flat[i] = (int(flat[i]) & 0xFE) | int(binary_data[i])
+    # Modify pixels
+    modified_pixels = []
+    bit_index = 0
     
-    # Convert back to uint8 and reshape
-    modified_pixels = (flat.reshape(original_shape) & 0xFF).astype(np.uint8)
-    watermarked_image = Image.fromarray(modified_pixels, mode='RGB')
+    for pixel in pixels:
+        r, g, b = pixel
+        new_pixel = [r, g, b]
+        
+        # Modify each channel if we have bits left
+        for channel in range(3):
+            if bit_index < len(binary_data):
+                # Clear LSB and set to watermark bit
+                new_pixel[channel] = (new_pixel[channel] & 0xFE) | int(binary_data[bit_index])
+                bit_index += 1
+        
+        modified_pixels.append(tuple(new_pixel))
+    
+    # Create new image
+    watermarked_image = Image.new('RGB', (width, height))
+    watermarked_image.putdata(modified_pixels)
     
     return watermarked_image, binary_data
 
@@ -48,22 +60,29 @@ def extract_watermark_lsb(image: Image.Image):
     if image.mode != 'RGB':
         image = image.convert('RGB')
     
-    pixels = np.array(image, dtype=np.uint8)
-    flat = pixels.flatten()
+    pixels = list(image.getdata())
     
-    binary_data = "".join([str(int(flat[i]) & 1) for i in range(min(len(flat), 16000))])
+    # Extract LSBs from all channels
+    binary_data = ""
+    for pixel in pixels[:5000]:  # Limit to first 5000 pixels for performance
+        r, g, b = pixel
+        binary_data += str(r & 1)
+        binary_data += str(g & 1)
+        binary_data += str(b & 1)
     
+    # Try to decode
     all_bytes = [binary_data[i:i+8] for i in range(0, len(binary_data), 8)]
     decoded = ""
     for b in all_bytes:
-        try:
-            char = chr(int(b, 2))
-            decoded += char
-            if "@@@@" in decoded:
-                final_text = decoded.split("@@@@")[0]
-                return final_text, 1.0 # Match ratio 1.0 for found
-        except:
-            continue
+        if len(b) == 8:
+            try:
+                char = chr(int(b, 2))
+                decoded += char
+                if "@@@@" in decoded:
+                    final_text = decoded.split("@@@@")[0]
+                    return final_text, 1.0 # Match ratio 1.0 for found
+            except:
+                continue
             
     return "Unknown", 0.1 # Match ratio 0.1 for not found
 

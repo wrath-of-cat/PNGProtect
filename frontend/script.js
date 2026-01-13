@@ -1,4 +1,133 @@
 // =============================
+// Professional Authentication System
+// =============================
+
+// Global API_BASE for all scripts
+const API_BASE = 'http://127.0.0.1:8000';
+
+// Initialize authentication on page load
+document.addEventListener('DOMContentLoaded', async () => {
+  await initializeAuth();
+});
+
+async function initializeAuth() {
+  const token = localStorage.getItem('pngprotect_token');
+  
+  if (!token) {
+    showUnauthenticatedState();
+    return;
+  }
+  
+  try {
+    const response = await fetch(`${API_BASE}/auth/me`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    
+    if (response.ok) {
+      const user = await response.json();
+      showAuthenticatedState(user);
+    } else {
+      // Token is invalid
+      localStorage.removeItem('pngprotect_token');
+      showUnauthenticatedState();
+    }
+  } catch (error) {
+    console.error('Auth check failed:', error);
+    showUnauthenticatedState();
+  }
+}
+
+function showUnauthenticatedState() {
+  // Show login/register buttons
+  const loginBtn = document.getElementById('login-btn');
+  const registerBtn = document.getElementById('register-btn');
+  const userWelcome = document.getElementById('user-welcome');
+  const dashboardLink = document.getElementById('dashboard-link');
+  const logoutBtn = document.getElementById('logout-btn');
+  const heroDashboardBtn = document.getElementById('hero-dashboard-btn');
+  
+  if (loginBtn) loginBtn.style.display = 'inline-block';
+  if (registerBtn) registerBtn.style.display = 'inline-block';
+  if (userWelcome) userWelcome.style.display = 'none';
+  if (dashboardLink) dashboardLink.style.display = 'none';
+  if (logoutBtn) logoutBtn.style.display = 'none';
+  if (heroDashboardBtn) heroDashboardBtn.style.display = 'none';
+}
+
+function showAuthenticatedState(user) {
+  // Show user info and dashboard access
+  const loginBtn = document.getElementById('login-btn');
+  const registerBtn = document.getElementById('register-btn');
+  const userWelcome = document.getElementById('user-welcome');
+  const dashboardLink = document.getElementById('dashboard-link');
+  const logoutBtn = document.getElementById('logout-btn');
+  const heroDashboardBtn = document.getElementById('hero-dashboard-btn');
+  
+  if (loginBtn) loginBtn.style.display = 'none';
+  if (registerBtn) registerBtn.style.display = 'none';
+  if (userWelcome) {
+    userWelcome.textContent = `Welcome, ${user.full_name}`;
+    userWelcome.style.display = 'inline-block';
+  }
+  if (dashboardLink) dashboardLink.style.display = 'inline-block';
+  if (logoutBtn) {
+    logoutBtn.style.display = 'inline-block';
+    logoutBtn.addEventListener('click', handleLogout);
+  }
+  if (heroDashboardBtn) heroDashboardBtn.style.display = 'inline-block';
+}
+
+function handleLogout() {
+  localStorage.removeItem('pngprotect_token');
+  showUnauthenticatedState();
+  
+  // Show logout notification
+  showNotification('Logged out successfully', 'success');
+}
+
+// Simple notification system for the main page
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = `main-notification ${type}`;
+  notification.textContent = message;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    z-index: 10000;
+    animation: slideInRight 0.3s ease;
+    background: ${type === 'success' ? '#22c55e' : type === 'error' ? '#ef4444' : '#3b82f6'};
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  `;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.animation = 'slideOutRight 0.3s ease';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// Add notification animations
+const notificationStyle = document.createElement('style');
+notificationStyle.textContent = `
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+`;
+document.head.appendChild(notificationStyle);
+
+// =============================
 // Utility: Smooth scroll on custom buttons
 // =============================
 
@@ -90,16 +219,73 @@ document.querySelectorAll("[data-scroll]").forEach((btn) => {
 // Front-end only simulation: store "watermark" metadata in memory
 // =============================
 
-const wmDropzone = document.getElementById("wm-dropzone");
-const wmInput = document.getElementById("wm-input");
-const wmOwnerInput = document.getElementById("wm-owner-id");
-const wmStrengthInput = document.getElementById("wm-strength");
-const wmStrengthLabel = document.getElementById("wm-strength-label");
-const wmApplyBtn = document.getElementById("wm-apply-btn");
-const wmPreviewPlaceholder = document.getElementById("wm-preview-placeholder");
-const wmPreviewOriginal = document.getElementById("wm-preview-original");
-const wmPreviewWatermarked = document.getElementById("wm-preview-watermarked");
-const wmDownloadBtn = document.getElementById("wm-download-btn");
+// Global drag & drop setup function
+function setupDropzone(dropzoneEl, inputEl, onFileSelected) {
+  if (!dropzoneEl || !inputEl) {
+    console.log('Dropzone elements not found, skipping setup');
+    return;
+  }
+  
+  dropzoneEl.addEventListener("click", () => inputEl.click());
+
+  dropzoneEl.addEventListener("dragenter", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropzoneEl.classList.add("drag-over");
+  });
+  dropzoneEl.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropzoneEl.classList.add("drag-over");
+  });
+  dropzoneEl.addEventListener("dragleave", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dropzoneEl.classList.remove("drag-over");
+  });
+  dropzoneEl.addEventListener("drop", (e) => {
+    e.preventDefault();
+    dropzoneEl.classList.remove("drag-over");
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      onFileSelected(file);
+    }
+  });
+
+  inputEl.addEventListener("change", () => {
+    const file = inputEl.files?.[0];
+    if (file && file.type.startsWith("image/")) {
+      onFileSelected(file);
+    }
+  });
+}
+
+// Initialize watermark functionality only if elements exist
+function initWatermarkFunctionality() {
+  const wmDropzone = document.getElementById("wm-dropzone");
+  const wmInput = document.getElementById("wm-input");
+  const wmOwnerInput = document.getElementById("wm-owner-id");
+  const wmStrengthInput = document.getElementById("wm-strength");
+  const wmStrengthLabel = document.getElementById("wm-strength-label");
+  const wmApplyBtn = document.getElementById("wm-apply-btn");
+  const wmPreviewPlaceholder = document.getElementById("wm-preview-placeholder");
+  const wmPreviewOriginal = document.getElementById("wm-preview-original");
+  const wmPreviewWatermarked = document.getElementById("wm-preview-watermarked");
+  const wmDownloadBtn = document.getElementById("wm-download-btn");
+
+  // Only proceed if watermark elements exist
+  if (!wmDropzone || !wmInput || !wmApplyBtn) {
+    console.log('Watermark elements not found, skipping watermark functionality');
+    return;
+  }
+
+  // Set up strength input if it exists
+  if (wmStrengthInput) {
+    updateStrengthLabel(wmStrengthInput.value);
+    wmStrengthInput.addEventListener("input", (e) =>
+      updateStrengthLabel(e.target.value)
+    );
+  }
 
 // Internal "database" of watermarked images (keyed by fake hash)
 const STORAGE_KEY = "pngprotect.watermarkStore.v1";
@@ -164,6 +350,9 @@ function loadImagePreview(file, imgEl) {
 
 // Update strength label meaningfully
 function updateStrengthLabel(value) {
+  const wmStrengthLabel = document.getElementById('wm-strength-label');
+  if (!wmStrengthLabel) return; // Exit if element doesn't exist
+  
   const val = Number(value);
   let label = "Low";
   if (val > 80) label = "Very high";
@@ -173,58 +362,21 @@ function updateStrengthLabel(value) {
   wmStrengthLabel.textContent = label;
 }
 
-updateStrengthLabel(wmStrengthInput.value);
-wmStrengthInput.addEventListener("input", (e) =>
-  updateStrengthLabel(e.target.value)
-);
-
 // Drag & drop wiring for watermark upload
-function setupDropzone(dropzoneEl, inputEl, onFileSelected) {
-  dropzoneEl.addEventListener("click", () => inputEl.click());
-
-  dropzoneEl.addEventListener("dragenter", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dropzoneEl.classList.add("drag-over");
-  });
-  dropzoneEl.addEventListener("dragover", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dropzoneEl.classList.add("drag-over");
-  });
-  dropzoneEl.addEventListener("dragleave", (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    dropzoneEl.classList.remove("drag-over");
-  });
-  dropzoneEl.addEventListener("drop", (e) => {
-    e.preventDefault();
-    dropzoneEl.classList.remove("drag-over");
-    const file = e.dataTransfer.files?.[0];
-    if (file && file.type.startsWith("image/")) {
-      onFileSelected(file);
-    }
-  });
-
-  inputEl.addEventListener("change", () => {
-    const file = inputEl.files?.[0];
-    if (file && file.type.startsWith("image/")) {
-      onFileSelected(file);
-    }
-  });
-}
 
 let currentWMFile = null;
 
-// When user selects an image, show it as "original" and clear watermarked preview
-setupDropzone(wmDropzone, wmInput, (file) => {
-  currentWMFile = file;
-  wmPreviewPlaceholder.style.display = "none";
-  loadImagePreview(file, wmPreviewOriginal);
-  wmPreviewWatermarked.src = "";
-  wmPreviewWatermarked.classList.remove("visible");
-  if (wmDownloadBtn) {
-    wmDownloadBtn.disabled = true;
+  // When user selects an image, show it as "original" and clear watermarked preview
+  setupDropzone(wmDropzone, wmInput, (file) => {
+    currentWMFile = file;
+    if (wmPreviewPlaceholder) wmPreviewPlaceholder.style.display = "none";
+    loadImagePreview(file, wmPreviewOriginal);
+    if (wmPreviewWatermarked) {
+      wmPreviewWatermarked.src = "";
+      wmPreviewWatermarked.classList.remove("visible");
+    }
+    if (wmDownloadBtn) {
+      wmDownloadBtn.disabled = true;
     delete wmDownloadBtn.dataset.filename;
   }
 });
@@ -507,27 +659,269 @@ wmApplyBtn.addEventListener("click", async () => {
   }
 });
 
+  // Download button behavior for watermarked preview
+  if (wmDownloadBtn) {
+    wmDownloadBtn.addEventListener("click", () => {
+      const src = wmPreviewWatermarked.src;
+      if (!src) return;
+      const filename = wmDownloadBtn.dataset.filename || "watermarked.png";
+      const a = document.createElement("a");
+      a.href = src;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    });
+  }
+
+} // End of initWatermarkFunctionality
+
+// Call the function to initialize watermark functionality
+initWatermarkFunctionality();
+
 // =============================
 // Verify section logic
 // =============================
 
-const vfDropzone = document.getElementById("vf-dropzone");
-const vfInput = document.getElementById("vf-input");
-const vfBtn = document.getElementById("vf-btn");
-const vfStatus = document.getElementById("vf-status");
-const vfDetected = document.getElementById("vf-detected");
-const vfOwner = document.getElementById("vf-owner");
-const vfConfidence = document.getElementById("vf-confidence");
-const vfBars = document.getElementById("vf-bars");
+// Web3 / Registry state
+let connectedAccount = null;
+let registryAbi = null;
+let registryAddress = null;
+let lastExtractedText = null;
+let lastWatermarkFound = false;
 
-let currentVfFile = null;
+const WALLET_STORAGE_KEY = "pngprotect.walletConnection.v1";
 
-// Setup drag & drop for verification upload
-setupDropzone(vfDropzone, vfInput, (file) => {
-  currentVfFile = file;
-  vfStatus.textContent = "Ready to verify";
-  vfStatus.className = "status-pill status-idle";
-});
+// Initialize wallet elements with null checks
+const connectWalletBtn = document.getElementById("connect-wallet-btn");
+const disconnectWalletBtn = document.getElementById("disconnect-wallet-btn");
+const walletAddressSpan = document.getElementById("wallet-address");
+const registerBtn = document.getElementById("register-onchain-btn");
+const registerStatus = document.getElementById("register-status");
+
+async function fetchRegistryAbi() {
+  try {
+    const res = await fetch("http://localhost:8000/registry/abi");
+    if (!res.ok) {
+      console.error("Failed to fetch registry ABI:", res.status);
+      return null;
+    }
+    const json = await res.json();
+    console.log("Registry ABI response:", json);
+    registryAbi = json.abi || json;
+    registryAddress = json.contract_address || json.contractAddress || json.address || null;
+    console.log("Registry Address:", registryAddress, "ABI:", registryAbi ? "loaded" : "not loaded");
+    return json;
+  } catch (e) {
+    console.error("Failed to fetch registry ABI:", e);
+    return null;
+  }
+}
+
+async function connectWallet() {
+  if (!connectWalletBtn || !disconnectWalletBtn || !walletAddressSpan) {
+    console.log('Wallet UI elements not found, skipping wallet functionality');
+    return;
+  }
+  
+  if (!window.ethereum) {
+    alert("MetaMask not detected. Install MetaMask to use on-chain registration.");
+    return;
+  }
+  try {
+    // Request accounts - this should trigger MetaMask popup
+    const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+    connectedAccount = accounts && accounts[0];
+    if (connectedAccount) {
+      const displayAddr = connectedAccount.slice(0, 6) + "..." + connectedAccount.slice(-4);
+      walletAddressSpan.textContent = displayAddr;
+      connectWalletBtn.style.display = "none";
+      disconnectWalletBtn.style.display = "inline-block";
+      console.log("Connected to wallet:", connectedAccount);
+      // Store wallet connection state
+      localStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify({ account: connectedAccount }));
+    }
+    await fetchRegistryAbi();
+    if (lastWatermarkFound) registerBtn.disabled = false;
+  } catch (e) {
+    console.error("Wallet connect failed:", e);
+    if (e.code === 4001) {
+      console.log("User rejected the connection request");
+    }
+  }
+}
+
+function disconnectWallet() {
+  if (!connectWalletBtn || !disconnectWalletBtn || !walletAddressSpan || !registerBtn || !registerStatus) {
+    console.log('Wallet UI elements not found, skipping disconnect');
+    return;
+  }
+  
+  connectedAccount = null;
+  walletAddressSpan.textContent = "Not connected";
+  connectWalletBtn.style.display = "inline-block";
+  disconnectWalletBtn.style.display = "none";
+  registerBtn.disabled = true;
+  registerStatus.textContent = "Not registered";
+  // Clear wallet connection state from storage
+  localStorage.removeItem(WALLET_STORAGE_KEY);
+  console.log("Wallet disconnected");
+}
+
+// =============================
+// MetaMask Event Listeners
+// Listen for account/chain changes
+// =============================
+function setupMetaMaskListeners() {
+  if (!window.ethereum) return;
+  
+  // Listen for account changes
+  window.ethereum.on("accountsChanged", (accounts) => {
+    console.log("MetaMask accounts changed:", accounts);
+    if (accounts && accounts.length > 0) {
+      // Account was switched in MetaMask
+      connectedAccount = accounts[0];
+      const displayAddr = connectedAccount.slice(0, 6) + "..." + connectedAccount.slice(-4);
+      walletAddressSpan.textContent = displayAddr;
+      connectWalletBtn.style.display = "none";
+      disconnectWalletBtn.style.display = "inline-block";
+      localStorage.setItem(WALLET_STORAGE_KEY, JSON.stringify({ account: connectedAccount }));
+      console.log("Account switched to:", connectedAccount);
+    } else {
+      // User disconnected from MetaMask
+      console.log("MetaMask disconnected by user");
+      disconnectWallet();
+    }
+  });
+  
+  // Listen for chain/network changes
+  window.ethereum.on("chainChanged", (chainId) => {
+    console.log("MetaMask chain changed to:", chainId);
+  });
+}
+
+setupMetaMaskListeners();
+
+if (connectWalletBtn) {
+  connectWalletBtn.addEventListener("click", connectWallet);
+}
+
+if (disconnectWalletBtn) {
+  disconnectWalletBtn.addEventListener("click", disconnectWallet);
+}
+
+// =============================
+// Wallet Initialization on Page Load
+// Clear any residual wallet data to ensure fresh state
+// =============================
+function initializeWalletState() {
+  if (!connectWalletBtn || !disconnectWalletBtn || !walletAddressSpan || !registerBtn || !registerStatus) {
+    console.log('Wallet UI elements not found, skipping wallet initialization');
+    return;
+  }
+  
+  // Always start with wallet disconnected on page load
+  // User must explicitly click "Connect Wallet" each time
+  localStorage.removeItem(WALLET_STORAGE_KEY);
+  connectedAccount = null;
+  walletAddressSpan.textContent = "Not connected";
+  connectWalletBtn.style.display = "inline-block";
+  disconnectWalletBtn.style.display = "none";
+  registerBtn.disabled = true;
+  registerStatus.textContent = "Not registered";
+  console.log("Wallet state initialized: disconnected");
+}
+
+// Initialize wallet state when page loads
+document.addEventListener("DOMContentLoaded", initializeWalletState);
+// Also initialize immediately if DOM is already loaded
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", initializeWalletState);
+} else {
+  initializeWalletState();
+}
+
+if (registerBtn) {
+  registerBtn.addEventListener("click", async () => {
+    if (!connectedAccount) {
+      console.log("No account connected, connecting wallet...");
+      await connectWallet();
+      if (!connectedAccount) return;
+    }
+    if (!lastWatermarkFound || !lastExtractedText) {
+      registerStatus.textContent = "No watermark available to register";
+      return;
+    }
+
+    registerBtn.disabled = true;
+    registerStatus.textContent = "Preparing transaction…";
+
+    try {
+      if (!registryAbi || !registryAddress) {
+        console.log("Fetching registry ABI...");
+        await fetchRegistryAbi();
+      }
+      
+      if (!registryAbi || !registryAddress) {
+        const errMsg = !registryAddress 
+          ? "⚠️ No CONTRACT_ADDRESS set on server. Deploy OwnershipRegistry.sol and set CONTRACT_ADDRESS env var." 
+          : "⚠️ Registry ABI not loaded.";
+        registerStatus.textContent = errMsg;
+        console.error(errMsg);
+        registerBtn.disabled = false;
+        return;
+      }
+
+      console.log("Creating contract instance at", registryAddress);
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const signer = provider.getSigner();
+      const contract = new ethers.Contract(registryAddress, registryAbi, signer);
+
+      // keccak256 of the extracted text (utf8)
+      const uuidHash = ethers.utils.keccak256(ethers.utils.toUtf8Bytes(lastExtractedText));
+      console.log("UUID:", lastExtractedText, "Hash:", uuidHash);
+
+      registerStatus.textContent = "Sending transaction…";
+      const tx = await contract.register(uuidHash);
+      console.log("Transaction sent:", tx.hash);
+      registerStatus.textContent = `Pending tx ${tx.hash.slice(0, 10)}…`;
+      await tx.wait();
+      registerStatus.textContent = `✓ Registered (${tx.hash.slice(0, 10)}…)`;
+      console.log("Transaction confirmed!");
+    } catch (e) {
+      console.error("Register error:", e);
+      registerStatus.textContent = e && e.message ? e.message.substring(0, 60) : "Registration failed";
+    } finally {
+      registerBtn.disabled = false;
+    }
+  });
+}
+
+// Initialize verify functionality only if elements exist
+function initVerifyFunctionality() {
+  const vfDropzone = document.getElementById("vf-dropzone");
+  const vfInput = document.getElementById("vf-input");
+  const vfBtn = document.getElementById("vf-btn");
+  const vfStatus = document.getElementById("vf-status");
+  const vfDetected = document.getElementById("vf-detected");
+  const vfOwner = document.getElementById("vf-owner");
+  const vfConfidence = document.getElementById("vf-confidence");
+  const vfBars = document.getElementById("vf-bars");
+
+  // Only proceed if verify elements exist
+  if (!vfDropzone || !vfInput || !vfBtn) {
+    console.log('Verify elements not found, skipping verify functionality');
+    return;
+  }
+
+  let currentVfFile = null;
+
+  // Setup drag & drop for verification upload
+  setupDropzone(vfDropzone, vfInput, (file) => {
+    currentVfFile = file;
+    vfStatus.textContent = "Ready to verify";
+    vfStatus.className = "status-pill status-idle";
+  });
 
 // Verify action - Real backend verification
 vfBtn.addEventListener("click", async () => {
@@ -569,16 +963,20 @@ vfBtn.addEventListener("click", async () => {
     // Extract values from response
     const watermarkFound = result.watermark_found;
     const ownerID = result.owner_id || "Unknown";
-    const extractedText = result.extracted_text || "Unknown";
+    const extractedText = result.extracted_text || null;
     const matchRatio = result.match_ratio || 0;
     const confidence = result.confidence || 0;
+
+    // Save for on-chain registration
+    lastExtractedText = extractedText;
+    lastWatermarkFound = !!watermarkFound;
 
     // Display results
     if (watermarkFound) {
       vfStatus.textContent = "✓ Watermark verified";
       vfStatus.className = "status-pill status-success";
       vfDetected.textContent = "Yes";
-      vfOwner.textContent = ownerID !== "Unknown" ? ownerID : extractedText;
+      vfOwner.textContent = ownerID !== "Unknown" ? ownerID : extractedText || "Unknown";
       vfConfidence.textContent = `${confidence}%`;
       console.log(`Watermark found - Owner: ${ownerID}, Extracted: ${extractedText}, Match: ${matchRatio}`);
     } else {
@@ -588,6 +986,18 @@ vfBtn.addEventListener("click", async () => {
       vfOwner.textContent = "None";
       vfConfidence.textContent = `${confidence}%`;
       console.log("No watermark found");
+    }
+
+    // Enable register UI only when both watermark exists and wallet is connected
+    if (watermarkFound && connectedAccount) {
+      registerBtn.disabled = false;
+      registerStatus.textContent = "Ready to register";
+    } else if (watermarkFound) {
+      registerBtn.disabled = true;
+      registerStatus.textContent = "Connect wallet to register";
+    } else {
+      registerBtn.disabled = true;
+      registerStatus.textContent = "Not registered";
     }
 
     // Brief accent animation on bars to emphasize result
@@ -636,20 +1046,10 @@ vfBtn.addEventListener("click", async () => {
   }
 });
 
-// Download button behavior for watermarked preview
-if (wmDownloadBtn) {
-  wmDownloadBtn.addEventListener("click", () => {
-    const src = wmPreviewWatermarked.src;
-    if (!src) return;
-    const filename = wmDownloadBtn.dataset.filename || "watermarked.png";
-    const a = document.createElement("a");
-    a.href = src;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-  });
-}
+} // End of initVerifyFunctionality
+
+// Call the function to initialize verify functionality
+initVerifyFunctionality();
 
 // Optional: small shake animation via class toggled above
 const style = document.createElement("style");
@@ -668,33 +1068,45 @@ style.textContent = `
   }
 `;
 document.head.appendChild(style);
+
+// Call the function to initialize verify functionality
+initVerifyFunctionality();
+
 // =============================
 // Strip Metadata section logic
 // =============================
 
-const smDropzone = document.getElementById("sm-dropzone");
-const smInput = document.getElementById("sm-input");
-const smBtn = document.getElementById("sm-btn");
-const smStatus = document.getElementById("sm-status");
-const smOriginalSize = document.getElementById("sm-original-size");
-const smCleanedSize = document.getElementById("sm-cleaned-size");
-const smReduction = document.getElementById("sm-reduction");
-const smDownloadBtn = document.getElementById("sm-download-btn");
+// Initialize strip metadata functionality only if elements exist
+function initStripMetadataFunctionality() {
+  const smDropzone = document.getElementById("sm-dropzone");
+  const smInput = document.getElementById("sm-input");
+  const smBtn = document.getElementById("sm-btn");
+  const smStatus = document.getElementById("sm-status");
+  const smOriginalSize = document.getElementById("sm-original-size");
+  const smCleanedSize = document.getElementById("sm-cleaned-size");
+  const smReduction = document.getElementById("sm-reduction");
+  const smDownloadBtn = document.getElementById("sm-download-btn");
 
-let currentSmFile = null;
-let cleanedImageBlob = null;
+  // Only proceed if strip metadata elements exist
+  if (!smDropzone || !smInput || !smBtn) {
+    console.log('Strip metadata elements not found, skipping strip metadata functionality');
+    return;
+  }
 
-// Setup drag & drop for metadata stripping upload
-setupDropzone(smDropzone, smInput, (file) => {
-  currentSmFile = file;
-  smStatus.textContent = "Ready to clean";
-  smStatus.className = "status-pill status-idle";
-  smOriginalSize.textContent = formatFileSize(file.size);
-  smCleanedSize.textContent = "–";
-  smReduction.textContent = "–";
-  cleanedImageBlob = null;
-  smDownloadBtn.disabled = true;
-});
+  let currentSmFile = null;
+  let cleanedImageBlob = null;
+
+  // Setup drag & drop for metadata stripping upload
+  setupDropzone(smDropzone, smInput, (file) => {
+    currentSmFile = file;
+    smStatus.textContent = "Ready to clean";
+    smStatus.className = "status-pill status-idle";
+    smOriginalSize.textContent = formatFileSize(file.size);
+    smCleanedSize.textContent = "–";
+    smReduction.textContent = "–";
+    cleanedImageBlob = null;
+    smDownloadBtn.disabled = true;
+  });
 
 // Format bytes to human readable size
 function formatFileSize(bytes) {
@@ -781,3 +1193,222 @@ smDownloadBtn.addEventListener("click", () => {
   a.remove();
   URL.revokeObjectURL(url);
 });
+
+} // End of initStripMetadataFunctionality
+
+// Call the function to initialize strip metadata functionality
+initStripMetadataFunctionality();
+
+// =============================
+// Watermark Tampering Detection
+// =============================
+
+function initDetectionFunctionality() {
+  // Elements
+  const detDropzone = document.getElementById('det-dropzone');
+  const detInput = document.getElementById('det-input');
+  const detFullBtn = document.getElementById('det-full-btn');
+  const detFastBtn = document.getElementById('det-fast-btn');
+  const detStatus = document.getElementById('det-status');
+  const detConfidenceContainer = document.getElementById('det-confidence-container');
+  const detConfidenceValue = document.getElementById('det-confidence-value');
+  const detConfidenceFill = document.getElementById('det-confidence-fill');
+  const detConfidenceLevel = document.getElementById('det-confidence-level');
+  const detVerdictContainer = document.getElementById('det-verdict-container');
+  const detVerdictIcon = document.getElementById('det-verdict-icon');
+  const detVerdictTitle = document.getElementById('det-verdict-title');
+  const detVerdictText = document.getElementById('det-verdict-text');
+  const detTechniquesContainer = document.getElementById('det-techniques-container');
+  const detTechniquesList = document.getElementById('det-techniques-list');
+  const detExplanationContainer = document.getElementById('det-explanation-container');
+  const detExplanationText = document.getElementById('det-explanation-text');
+  const detTechnicalContainer = document.getElementById('det-technical-container');
+  const detTechnicalText = document.getElementById('det-technical-text');
+  const detToggleTechnical = document.getElementById('det-toggle-technical');
+
+  let currentDetFile = null;
+  let technicalDetailsVisible = false;
+
+  // Dropzone functionality
+  detDropzone.addEventListener('click', () => detInput.click());
+  detDropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    detDropzone.style.borderColor = 'var(--accent-cyan)';
+    detDropzone.style.background = 'rgba(34, 211, 238, 0.05)';
+  });
+  detDropzone.addEventListener('dragleave', () => {
+    detDropzone.style.borderColor = '';
+    detDropzone.style.background = '';
+  });
+  detDropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    detDropzone.style.borderColor = '';
+    detDropzone.style.background = '';
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+      detInput.files = files;
+      handleDetectionFileSelect();
+    }
+  });
+
+  detInput.addEventListener('change', handleDetectionFileSelect);
+
+  function handleDetectionFileSelect() {
+    const file = detInput.files[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+    currentDetFile = file;
+    detDropzone.querySelector('.dropzone-inner').innerHTML = `
+      <span class="drop-icon">✅</span>
+      <p>${file.name}</p>
+      <p class="drop-subtext">${formatFileSize(file.size)}</p>
+    `;
+    detStatus.textContent = 'Ready to analyze';
+    detStatus.className = 'status-pill status-idle';
+    resetDetectionResults();
+  }
+
+  function resetDetectionResults() {
+    detConfidenceContainer.style.display = 'none';
+    detVerdictContainer.style.display = 'none';
+    detTechniquesContainer.style.display = 'none';
+    detExplanationContainer.style.display = 'none';
+    detTechnicalContainer.style.display = 'none';
+    detToggleTechnical.style.display = 'none';
+    technicalDetailsVisible = false;
+    detToggleTechnical.textContent = 'Show Technical Details';
+  }
+
+  // Analyze function
+  async function analyzeImage(mode) {
+    if (!currentDetFile) {
+      alert('Please select an image first');
+      return;
+    }
+
+    const btn = mode === 'full' ? detFullBtn : detFastBtn;
+    btn.classList.add('loading');
+    btn.disabled = true;
+
+    detStatus.textContent = mode === 'full' ? 'Running full analysis...' : 'Running forensic analysis...';
+    detStatus.className = 'status-pill status-processing';
+    resetDetectionResults();
+
+    try {
+      const formData = new FormData();
+      formData.append('file', currentDetFile);
+
+      const endpoint = mode === 'full' ? '/detect/detect' : '/detect/forensics-only';
+      const response = await fetch(API_BASE + endpoint, {
+        method: 'POST',
+        body: formData
+      });
+
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      displayDetectionResults(result);
+    } catch (error) {
+      console.error('Detection error:', error);
+      detStatus.textContent = 'Error analyzing image: ' + error.message;
+      detStatus.className = 'status-pill status-error';
+    }
+
+    btn.classList.remove('loading');
+    btn.disabled = false;
+  }
+
+  function displayDetectionResults(result) {
+    const confidence = result.overall_tampering_confidence || 0;
+    const confidenceLevel = result.confidence_level || 'Unknown';
+    const likelyRemoved = result.likely_removed === true;
+
+    // Update status
+    detStatus.textContent = `Analysis complete - ${confidenceLevel} confidence`;
+    detStatus.className = confidence > 60 ? 'status-pill status-warning' : 'status-pill status-success';
+
+    // Display confidence score
+    detConfidenceContainer.style.display = 'block';
+    detConfidenceValue.textContent = `${Math.round(confidence)}%`;
+    detConfidenceFill.style.width = `${confidence}%`;
+
+    // Update color based on confidence
+    if (confidence >= 70) {
+      detConfidenceFill.style.background = 'linear-gradient(90deg, #f97373, #ff6b6b)';
+      detConfidenceLevel.textContent = `Likelihood: Very High (${confidenceLevel})`;
+    } else if (confidence >= 50) {
+      detConfidenceFill.style.background = 'linear-gradient(90deg, #facc15, #fbbf24)';
+      detConfidenceLevel.textContent = `Likelihood: Medium (${confidenceLevel})`;
+    } else if (confidence >= 30) {
+      detConfidenceFill.style.background = 'linear-gradient(90deg, #22d3ee, #06b6d4)';
+      detConfidenceLevel.textContent = `Likelihood: Low (${confidenceLevel})`;
+    } else {
+      detConfidenceFill.style.background = 'linear-gradient(90deg, #22c55e, #16a34a)';
+      detConfidenceLevel.textContent = `Likelihood: Minimal (${confidenceLevel})`;
+    }
+
+    // Display verdict
+    detVerdictContainer.style.display = 'block';
+    if (likelyRemoved) {
+      detVerdictIcon.textContent = '⚠️';
+      detVerdictContainer.style.borderLeftColor = '#f97373';
+      detVerdictTitle.textContent = 'Likely Tampering Detected';
+      detVerdictText.textContent = 'The image shows signs of watermark removal or significant modification.';
+    } else if (confidence > 30) {
+      detVerdictIcon.textContent = '⚠️';
+      detVerdictContainer.style.borderLeftColor = '#facc15';
+      detVerdictTitle.textContent = 'Possible Tampering';
+      detVerdictText.textContent = 'The image may have been modified. Manual review recommended.';
+    } else {
+      detVerdictIcon.textContent = '✅';
+      detVerdictContainer.style.borderLeftColor = '#22c55e';
+      detVerdictTitle.textContent = 'Image Integrity Intact';
+      detVerdictText.textContent = 'No significant signs of watermark tampering detected.';
+    }
+
+    // Display techniques
+    if (result.detected_techniques && result.detected_techniques.length > 0) {
+      detTechniquesContainer.style.display = 'block';
+      detTechniquesList.innerHTML = result.detected_techniques
+        .map(technique => `
+          <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0;">
+            <span style="color: #facc15;">◆</span>
+            <span style="color: var(--text-soft);">${technique}</span>
+          </div>
+        `)
+        .join('');
+    }
+
+    // Display forensic explanation
+    if (result.forensic_explanation) {
+      detExplanationContainer.style.display = 'block';
+      detExplanationText.textContent = result.forensic_explanation;
+    }
+
+    // Store technical summary for toggle
+    if (result.technical_summary) {
+      detTechnicalContainer.style.display = 'none';
+      detTechnicalText.textContent = result.technical_summary;
+      detToggleTechnical.style.display = 'block';
+    }
+  }
+
+  // Button event listeners
+  detFullBtn.addEventListener('click', () => analyzeImage('full'));
+  detFastBtn.addEventListener('click', () => analyzeImage('fast'));
+
+  // Toggle technical details
+  detToggleTechnical.addEventListener('click', () => {
+    technicalDetailsVisible = !technicalDetailsVisible;
+    detTechnicalContainer.style.display = technicalDetailsVisible ? 'block' : 'none';
+    detToggleTechnical.textContent = technicalDetailsVisible ? 'Hide Technical Details' : 'Show Technical Details';
+  });
+}
+
+// Initialize detection functionality
+initDetectionFunctionality();

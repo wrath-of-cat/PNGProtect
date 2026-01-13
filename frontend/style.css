@@ -206,10 +206,10 @@ main {
   inset-inline: min(6vw, 72px);
   top: 18px;
   z-index: 20;
-  display: flex;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
   align-items: center;
-  justify-content: space-between;
-  padding: 10px 16px;
+  padding: 12px 20px;
   background: linear-gradient(
     135deg,
     rgba(15, 23, 42, 0.86),
@@ -258,22 +258,110 @@ main {
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 16px;
-  font-size: 0.86rem;
+  justify-content: center;
+  gap: 20px;
+  font-size: 0.9rem;
+  width: 100%;
 }
 
 .nav-links a {
-  padding: 6px 12px;
+  padding: 8px 16px;
   border-radius: 999px;
   color: var(--text-soft);
-  transition: color var(--transition-fast), background var(--transition-fast),
-    transform var(--transition-fast);
+  transition: all 0.2s ease;
+  font-weight: 500;
+  white-space: nowrap;
 }
 
 .nav-links a:hover {
   color: #e5e7eb;
   background: rgba(30, 64, 175, 0.4);
   transform: translateY(-1px);
+}
+
+/* User area styling for consistency */
+.user-area {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  min-width: fit-content;
+}
+
+.user-name {
+  color: var(--text-main);
+  font-weight: 500;
+  font-size: 0.85rem;
+  padding: 6px 12px;
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.2);
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+.wallet-address {
+  color: var(--text-soft);
+  font-size: 0.85rem;
+  font-family: 'Courier New', monospace;
+  padding: 6px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 120px;
+  text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 32px;
+  white-space: nowrap;
+}
+
+#login-btn, #register-btn, #logout-btn, #dashboard-link {
+  padding: 6px 14px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+#login-btn, #register-btn {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: var(--accent-blue);
+}
+
+#login-btn:hover, #register-btn:hover {
+  background: rgba(59, 130, 246, 0.2);
+  transform: translateY(-1px);
+}
+
+#logout-btn, #dashboard-link {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: var(--text-main);
+}
+
+#logout-btn:hover, #dashboard-link:hover {
+  background: rgba(255, 255, 255, 0.15);
+  transform: translateY(-1px);
+}
+
+#connect-wallet-btn, #disconnect-wallet-btn {
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  background: rgba(168, 85, 247, 0.1);
+  border: 1px solid rgba(168, 85, 247, 0.3);
+  color: var(--accent-purple);
+}
+
+#connect-wallet-btn:hover, #disconnect-wallet-btn:hover {
+  background: rgba(168, 85, 247, 0.2);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3);
 }
 
 /* ===========================
@@ -933,6 +1021,9 @@ h3 {
 
 @media (max-width: 900px) {
   .top-nav {
+    display: flex !important;
+    justify-content: space-between !important;
+    grid-template-columns: none !important;
     inset-inline: 16px;
   }
 
@@ -967,4 +1058,155 @@ h3 {
   .steps-grid {
     grid-template-columns: minmax(0, 1fr);
   }
+}
+/* Navigation active state */
+.nav-links a.active {
+  color: var(--accent-blue);
+  background: rgba(59, 130, 246, 0.15);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  font-weight: 600;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.2);
+}
+
+/* ===========================
+   DETECTION SECTION STYLES
+   =========================== */
+
+.confidence-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.confidence-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #22c55e, #16a34a);
+  border-radius: 999px;
+  transition: width 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.4);
+}
+
+.confidence-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: rgba(59, 130, 246, 0.2);
+  border: 1px solid rgba(59, 130, 246, 0.4);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--accent-blue);
+  letter-spacing: 0.5px;
+}
+
+/* Status pills with improved colors */
+.status-pill {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  text-align: center;
+  width: 100%;
+  transition: all 0.3s ease;
+  margin-bottom: 1rem;
+}
+
+.status-idle {
+  background: rgba(148, 163, 184, 0.15);
+  color: var(--text-soft);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.status-processing {
+  background: rgba(59, 130, 246, 0.15);
+  color: var(--accent-blue);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.status-success {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-warning {
+  background: rgba(250, 204, 21, 0.15);
+  color: var(--warning);
+  border: 1px solid rgba(250, 204, 21, 0.3);
+}
+
+.status-error {
+  background: rgba(249, 115, 115, 0.15);
+  color: var(--error);
+  border: 1px solid rgba(249, 115, 115, 0.3);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Button loading state */
+.btn.loading {
+  position: relative;
+  color: transparent;
+}
+
+.btn.loading::after {
+  content: '';
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  top: 50%;
+  left: 50%;
+  margin-left: -7px;
+  margin-top: -7px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  border-top-color: currentColor;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Detection result animations */
+.result-card {
+  animation: slideInUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive adjustments for detection section */
+@media (max-width: 768px) {
+  .confidence-badge {
+    font-size: 0.75rem;
+    padding: 0.2rem 0.6rem;
+  }
+
+  .status-pill {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.85rem;
+  }
+}
 }

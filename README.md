@@ -75,6 +75,50 @@ python verify.py --input protected.png --key "your_secret_key"
 python phash_compare.py image1.png image2.png
 ```
 
+## 🔧 API Endpoints
+
+- **Authentication**: `/auth/login`, `/auth/register`, `/auth/me`
+- **Watermarking**: `/watermark/embed`, `/watermark/{id}`
+- **Verification**: `/verify/detect`, `/verify/extract`
+- **Dashboard**: `/dashboard/stats`, `/dashboard/analytics`
+- **Metadata**: `/metadata/strip`
+- **Blockchain Registry**: `/registry/abi` (smart contract integration)
+
+## � Blockchain Features
+
+### Wallet Integration
+- **MetaMask Connection** - Seamless wallet linking
+- **Account Management** - Automatic account switching detection
+- **Network Support** - Ethereum mainnet and testnets
+
+### On-Chain Registration
+- **Ownership Registry** - Register watermark ownership on blockchain
+- **Smart Contract** - Ethereum-based ownership verification
+- **Immutable Records** - Permanent ownership proof
+
+### Usage Flow
+1. **Watermark** your image using the invisible watermarking system
+2. **Verify** the watermark is properly embedded
+3. **Connect Wallet** using MetaMask
+4. **Register Ownership** on-chain for permanent proof
+
+## 🎨 Tech Stack
+
+- **Backend**: FastAPI, SQLite, Python
+- **Frontend**: Vanilla JavaScript, CSS Grid, HTML5
+- **Authentication**: JWT-like tokens, password hashing
+- **Blockchain**: ethers.js, MetaMask integration, Solidity smart contracts
+- **Styling**: Glassmorphism design, responsive layout
+
+## 🔒 Security Features
+
+- **Password Hashing** with SHA-256
+- **Session Management** with secure tokens
+- **CORS Protection** properly configured
+- **Input Validation** on all endpoints
+- **Blockchain Security** - Immutable ownership records
+
+## 📝 License
 
 ## Architecture
         ┌──────────── Input PNG ─────────────┐
