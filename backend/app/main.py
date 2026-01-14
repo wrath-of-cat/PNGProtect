@@ -4,7 +4,7 @@ to run the server'''
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.routes import auth, watermark, verify, metadata, detection, registry
+from app.routes import watermark, verify, metadata, detection, registry
 import os
 from dotenv import load_dotenv
 
@@ -25,7 +25,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-app.include_router(auth.router, prefix="/auth", tags=["Authentication"])
 app.include_router(watermark.router, prefix="/watermark", tags=["Watermark"])
 app.include_router(verify.router, prefix="/verify", tags=["Verify"])
 app.include_router(metadata.router, prefix="/metadata", tags=["Metadata"])

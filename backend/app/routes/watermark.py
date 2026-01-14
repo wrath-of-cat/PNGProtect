@@ -1,4 +1,4 @@
-from fastapi import APIRouter, File, UploadFile, HTTPException, Form, Depends
+from fastapi import APIRouter, File, UploadFile, HTTPException, Form
 from fastapi.responses import StreamingResponse
 import io
 import uuid
@@ -11,7 +11,6 @@ from app.services.watermarking import (
 )
 from app.storage.db import WatermarkStore
 from app.models.schemas import VerifyResponse, PublicVerifyResponse
-from app.routes.auth import require_auth
 
 router = APIRouter()
 store = WatermarkStore.get_instance()
@@ -81,8 +80,7 @@ async def public_lookup(watermark_id: str):
 async def embed_watermark(
     file: UploadFile = File(...),
     owner_id: str = Form(...),
-    strength: int = Form(default=5),
-    current_user = Depends(require_auth)
+    strength: int = Form(default=5)
 ):
     """
     Embeds an invisible watermark into the image using LSB steganography.
@@ -125,13 +123,11 @@ async def embed_watermark(
         watermarked_image_hash = sha256_bytes(watermarked_bytes_value)
         watermark_id = str(uuid.uuid4())
         
-        # Use the authenticated user's ID as the owner_id for proper tracking
-        actual_owner_id = current_user.id
-        
+        # Use the provided owner_id (no auth needed, user provides it)
         store.save_record(
             watermark_id=watermark_id,
             image_hash=watermarked_image_hash,
-            owner_id=actual_owner_id,
+            owner_id=owner_id,
             strength=strength,
             total_bits=len(binary_data)
         )

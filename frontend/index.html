@@ -27,15 +27,6 @@
       <a href="#how-it-works">How it works</a>
     </nav>
     <div class="user-area">
-      <!-- Authentication buttons (shown when not logged in) -->
-      <a href="login.html" id="login-btn" class="btn ghost">Login</a>
-      <a href="register.html" id="register-btn" class="btn primary">Sign Up</a>
-      
-      <!-- User info (shown when logged in) -->
-      <span id="user-welcome" class="user-name" style="display: none;">Welcome, User</span>
-      <a href="dashboard.html" id="dashboard-link" class="btn ghost" style="display: none;">Dashboard</a>
-      <button id="logout-btn" class="btn ghost" style="display: none;">Logout</button>
-      
       <!-- Wallet connection (blockchain feature) -->
       <button id="connect-wallet-btn" class="btn ghost">Connect Wallet</button>
       <button id="disconnect-wallet-btn" class="btn ghost" style="display:none;">Disconnect</button>
@@ -57,10 +48,6 @@
           <button class="btn ghost" data-scroll="#verify">
             Verify Ownership
           </button>
-          <!-- Dashboard button (shown when logged in) -->
-          <a href="dashboard.html" id="hero-dashboard-btn" class="btn ghost" style="display: none;">
-            My Dashboard
-          </a>
         </div>
         <div class="hero-meta">
           <span class="pill">Client-side demo only</span>
@@ -82,8 +69,8 @@
           <h3>Upload & Configure</h3>
 
           <!-- Drag & drop area -->
+          <input type="file" id="wm-input" accept="image/*" hidden />
           <div id="wm-dropzone" class="dropzone">
-            <input type="file" id="wm-input" accept="image/*" hidden />
             <div class="dropzone-inner">
               <span class="drop-icon">⬆️</span>
               <p>Drag & drop an image here</p>

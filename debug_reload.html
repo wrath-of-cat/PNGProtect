@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug: Page Reload Test</title>
+    <style>
+        body { font-family: Arial; margin: 20px; background: #f9f9f9; }
+        h1 { color: #333; }
+        .container { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 600px; }
+        .log-box { background: #f0f0f0; padding: 15px; border-left: 4px solid #007bff; margin: 10px 0; font-family: monospace; font-size: 12px; max-height: 400px; overflow-y: auto; }
+        .log-entry { padding: 2px 0; }
+        .log-entry.error { color: #dc3545; }
+        .log-entry.success { color: #28a745; }
+        button { padding: 10px 20px; margin: 10px 5px 0 0; cursor: pointer; font-size: 14px; }
+        button:hover { opacity: 0.8; }
+        #upload-section { margin-top: 20px; padding: 15px; background: #e7f3ff; border: 2px dashed #007bff; border-radius: 8px; }
+        #preview { max-width: 300px; margin-top: 20px; display: none; }
+        .status { font-weight: bold; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .status.ready { background: #d4edda; color: #155724; }
+        .status.loading { background: #fff3cd; color: #856404; }
+        .status.error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔍 Page Reload Debug Test</h1>
+        
+        <div id="status" class="status ready">✅ Page loaded and ready</div>
+        
+        <div id="upload-section">
+            <h2>File Upload Test</h2>
+            <input type="file" id="file-input" accept="image/*" />
+            <button onclick="testUpload()">Test Upload</button>
+            <button onclick="clearLogs()">Clear Logs</button>
+        </div>
+
+        <h3>Console Logs:</h3>
+        <div class="log-box" id="logs"></div>
+
+        <img id="preview" />
+    </div>
+
+    <script>
+        const status = document.getElementById('status');
+        const logsDiv = document.getElementById('logs');
+        let logCount = 0;
+
+        function log(msg, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : '';
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${className}`;
+            entry.textContent = `[${++logCount}] ${timestamp} - ${msg}`;
+            logsDiv.appendChild(entry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            console.log(`[${type.toUpperCase()}] ${msg}`);
+        }
+
+        function clearLogs() {
+            logsDiv.innerHTML = '';
+            logCount = 0;
+            log('Logs cleared');
+        }
+
+        function testUpload() {
+            log('Test upload clicked');
+            document.getElementById('file-input').click();
+        }
+
+        // Page load
+        window.addEventListener('load', () => {
+            log('Window load event fired', 'success');
+        });
+
+        // Before unload (detects page reload)
+        window.addEventListener('beforeunload', () => {
+            log('beforeunload event - PAGE IS RELOADING!', 'error');
+        });
+
+        // File input
+        const fileInput = document.getElementById('file-input');
+        fileInput.addEventListener('change', () => {
+            const file = fileInput.files[0];
+            if (!file) {
+                log('No file selected', 'error');
+                return;
+            }
+            log(`File selected: ${file.name}`, 'success');
+            status.className = 'status loading';
+            status.textContent = '⏳ Processing file...';
+
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                log('FileReader completed', 'success');
+                document.getElementById('preview').src = e.target.result;
+                document.getElementById('preview').style.display = 'block';
+                log('Preview displayed', 'success');
+                status.className = 'status ready';
+                status.textContent = '✅ File processed successfully!';
+                fileInput.value = '';
+            };
+            reader.onerror = (e) => {
+                log(`FileReader error: ${e}`, 'error');
+                status.className = 'status error';
+                status.textContent = '❌ Error reading file';
+            };
+            log('Starting FileReader...');
+            reader.readAsDataURL(file);
+        });
+
+        log('Script initialized', 'success');
+    </script>
+</body>
+</html>

@@ -1,89 +1,13 @@
 // =============================
-// Professional Authentication System
+// Global API_BASE for all scripts
 // =============================
 
-// Global API_BASE for all scripts
 const API_BASE = 'http://127.0.0.1:8000';
 
-// Initialize authentication on page load
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
-  await initializeAuth();
+  // Remove authentication check - app is now open to all users
 });
-
-async function initializeAuth() {
-  const token = localStorage.getItem('pngprotect_token');
-  
-  if (!token) {
-    showUnauthenticatedState();
-    return;
-  }
-  
-  try {
-    const response = await fetch(`${API_BASE}/auth/me`, {
-      headers: { 'Authorization': `Bearer ${token}` }
-    });
-    
-    if (response.ok) {
-      const user = await response.json();
-      showAuthenticatedState(user);
-    } else {
-      // Token is invalid
-      localStorage.removeItem('pngprotect_token');
-      showUnauthenticatedState();
-    }
-  } catch (error) {
-    console.error('Auth check failed:', error);
-    showUnauthenticatedState();
-  }
-}
-
-function showUnauthenticatedState() {
-  // Show login/register buttons
-  const loginBtn = document.getElementById('login-btn');
-  const registerBtn = document.getElementById('register-btn');
-  const userWelcome = document.getElementById('user-welcome');
-  const dashboardLink = document.getElementById('dashboard-link');
-  const logoutBtn = document.getElementById('logout-btn');
-  const heroDashboardBtn = document.getElementById('hero-dashboard-btn');
-  
-  if (loginBtn) loginBtn.style.display = 'inline-block';
-  if (registerBtn) registerBtn.style.display = 'inline-block';
-  if (userWelcome) userWelcome.style.display = 'none';
-  if (dashboardLink) dashboardLink.style.display = 'none';
-  if (logoutBtn) logoutBtn.style.display = 'none';
-  if (heroDashboardBtn) heroDashboardBtn.style.display = 'none';
-}
-
-function showAuthenticatedState(user) {
-  // Show user info and dashboard access
-  const loginBtn = document.getElementById('login-btn');
-  const registerBtn = document.getElementById('register-btn');
-  const userWelcome = document.getElementById('user-welcome');
-  const dashboardLink = document.getElementById('dashboard-link');
-  const logoutBtn = document.getElementById('logout-btn');
-  const heroDashboardBtn = document.getElementById('hero-dashboard-btn');
-  
-  if (loginBtn) loginBtn.style.display = 'none';
-  if (registerBtn) registerBtn.style.display = 'none';
-  if (userWelcome) {
-    userWelcome.textContent = `Welcome, ${user.full_name}`;
-    userWelcome.style.display = 'inline-block';
-  }
-  if (dashboardLink) dashboardLink.style.display = 'inline-block';
-  if (logoutBtn) {
-    logoutBtn.style.display = 'inline-block';
-    logoutBtn.addEventListener('click', handleLogout);
-  }
-  if (heroDashboardBtn) heroDashboardBtn.style.display = 'inline-block';
-}
-
-function handleLogout() {
-  localStorage.removeItem('pngprotect_token');
-  showUnauthenticatedState();
-  
-  // Show logout notification
-  showNotification('Logged out successfully', 'success');
-}
 
 // Simple notification system for the main page
 function showNotification(message, type = 'info') {
@@ -226,7 +150,12 @@ function setupDropzone(dropzoneEl, inputEl, onFileSelected) {
     return;
   }
   
-  dropzoneEl.addEventListener("click", () => inputEl.click());
+  dropzoneEl.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    console.log("Dropzone clicked, opening file picker");
+    inputEl.click();
+  });
 
   dropzoneEl.addEventListener("dragenter", (e) => {
     e.preventDefault();
@@ -253,39 +182,23 @@ function setupDropzone(dropzoneEl, inputEl, onFileSelected) {
   });
 
   inputEl.addEventListener("change", () => {
+    console.log("File input change event triggered");
     const file = inputEl.files?.[0];
+    console.log("File selected:", file?.name || "none");
     if (file && file.type.startsWith("image/")) {
+      console.log("Valid image file, calling onFileSelected");
       onFileSelected(file);
+      // Reset the input value so the same file can be selected again
+      inputEl.value = '';
+    } else {
+      console.log("Invalid file or not an image");
     }
   });
 }
 
-// Initialize watermark functionality only if elements exist
-function initWatermarkFunctionality() {
-  const wmDropzone = document.getElementById("wm-dropzone");
-  const wmInput = document.getElementById("wm-input");
-  const wmOwnerInput = document.getElementById("wm-owner-id");
-  const wmStrengthInput = document.getElementById("wm-strength");
-  const wmStrengthLabel = document.getElementById("wm-strength-label");
-  const wmApplyBtn = document.getElementById("wm-apply-btn");
-  const wmPreviewPlaceholder = document.getElementById("wm-preview-placeholder");
-  const wmPreviewOriginal = document.getElementById("wm-preview-original");
-  const wmPreviewWatermarked = document.getElementById("wm-preview-watermarked");
-  const wmDownloadBtn = document.getElementById("wm-download-btn");
-
-  // Only proceed if watermark elements exist
-  if (!wmDropzone || !wmInput || !wmApplyBtn) {
-    console.log('Watermark elements not found, skipping watermark functionality');
-    return;
-  }
-
-  // Set up strength input if it exists
-  if (wmStrengthInput) {
-    updateStrengthLabel(wmStrengthInput.value);
-    wmStrengthInput.addEventListener("input", (e) =>
-      updateStrengthLabel(e.target.value)
-    );
-  }
+// =============================
+// Watermark Utility Functions
+// =============================
 
 // Internal "database" of watermarked images (keyed by fake hash)
 const STORAGE_KEY = "pngprotect.watermarkStore.v1";
@@ -340,6 +253,10 @@ async function hashFile(file) {
 
 // Utility to show selected image
 function loadImagePreview(file, imgEl) {
+  if (!imgEl) {
+    console.error("loadImagePreview: imgEl is null");
+    return;
+  }
   const reader = new FileReader();
   reader.onload = (e) => {
     imgEl.src = e.target.result;
@@ -362,69 +279,122 @@ function updateStrengthLabel(value) {
   wmStrengthLabel.textContent = label;
 }
 
-// Drag & drop wiring for watermark upload
+// Initialize watermark functionality only if elements exist
+function initWatermarkFunctionality() {
+  try {
+    console.log("===== INITIALIZING WATERMARK FUNCTIONALITY =====");
+    
+    const wmDropzone = document.getElementById("wm-dropzone");
+    const wmInput = document.getElementById("wm-input");
+    const wmOwnerInput = document.getElementById("wm-owner-id");
+    const wmStrengthInput = document.getElementById("wm-strength");
+    const wmStrengthLabel = document.getElementById("wm-strength-label");
+  const wmApplyBtn = document.getElementById("wm-apply-btn");
+  const wmPreviewPlaceholder = document.getElementById("wm-preview-placeholder");
+  const wmPreviewOriginal = document.getElementById("wm-preview-original");
+  const wmPreviewWatermarked = document.getElementById("wm-preview-watermarked");
+  const wmDownloadBtn = document.getElementById("wm-download-btn");
 
-let currentWMFile = null;
+  console.log("Elements found:", {
+    wmDropzone: !!wmDropzone,
+    wmInput: !!wmInput,
+    wmOwnerInput: !!wmOwnerInput,
+    wmStrengthInput: !!wmStrengthInput,
+    wmApplyBtn: !!wmApplyBtn,
+    wmPreviewOriginal: !!wmPreviewOriginal,
+    wmPreviewWatermarked: !!wmPreviewWatermarked,
+    wmDownloadBtn: !!wmDownloadBtn
+  });
+
+  // Only proceed if watermark elements exist
+  if (!wmDropzone || !wmInput || !wmApplyBtn) {
+    console.log('Watermark elements not found, skipping watermark functionality');
+    return;
+  }
+
+  // Set up strength input if it exists
+  if (wmStrengthInput) {
+    updateStrengthLabel(wmStrengthInput.value);
+    wmStrengthInput.addEventListener("input", (e) =>
+      updateStrengthLabel(e.target.value)
+    );
+  }
+
+  // Drag & drop wiring for watermark upload
+  let currentWMFile = null;
 
   // When user selects an image, show it as "original" and clear watermarked preview
   setupDropzone(wmDropzone, wmInput, (file) => {
-    currentWMFile = file;
-    if (wmPreviewPlaceholder) wmPreviewPlaceholder.style.display = "none";
-    loadImagePreview(file, wmPreviewOriginal);
-    if (wmPreviewWatermarked) {
-      wmPreviewWatermarked.src = "";
-      wmPreviewWatermarked.classList.remove("visible");
-    }
-    if (wmDownloadBtn) {
-      wmDownloadBtn.disabled = true;
-    delete wmDownloadBtn.dataset.filename;
-  }
-});
-
-// Preview toggle (Original vs Watermarked) micro-interaction
-const previewToggleButtons = document.querySelectorAll(
-  "[data-preview-mode]"
-);
-
-previewToggleButtons.forEach((btn) => {
-  btn.addEventListener("click", () => {
-    previewToggleButtons.forEach((b) => b.classList.remove("chip-active"));
-    btn.classList.add("chip-active");
-
-    const mode = btn.getAttribute("data-preview-mode");
-    if (mode === "original") {
-      wmPreviewOriginal.style.display = "block";
-      wmPreviewWatermarked.style.display = "none";
-    } else {
-      wmPreviewOriginal.style.display = "none";
-      wmPreviewWatermarked.style.display = "block";
+    try {
+      console.log("File selected via dropzone:", file.name);
+      currentWMFile = file;
+      if (wmPreviewPlaceholder) wmPreviewPlaceholder.style.display = "none";
+      loadImagePreview(file, wmPreviewOriginal);
+      if (wmPreviewWatermarked) {
+        wmPreviewWatermarked.src = "";
+        wmPreviewWatermarked.classList.remove("visible");
+      }
+      if (wmDownloadBtn) {
+        wmDownloadBtn.disabled = true;
+        delete wmDownloadBtn.dataset.filename;
+      }
+      console.log("Image preview loaded:", file.name);
+    } catch (err) {
+      console.error("Error in file selection callback:", err);
     }
   });
-});
 
-// Apply invisible watermark simulation
-wmApplyBtn.addEventListener("click", async () => {
-  if (!currentWMFile) {
-    wmDropzone.classList.add("drag-over");
-    setTimeout(() => wmDropzone.classList.remove("drag-over"), 600);
-    return;
-  }
+  // Preview toggle (Original vs Watermarked) micro-interaction
+  const previewToggleButtons = document.querySelectorAll(
+    "[data-preview-mode]"
+  );
 
-  const ownerId = wmOwnerInput.value.trim();
-  if (!ownerId) {
-    wmOwnerInput.focus();
-    wmOwnerInput.classList.add("shake");
-    setTimeout(() => wmOwnerInput.classList.remove("shake"), 400);
-    return;
-  }
+  previewToggleButtons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      previewToggleButtons.forEach((b) => b.classList.remove("chip-active"));
+      btn.classList.add("chip-active");
 
-  // Start fake loading state
-  wmApplyBtn.classList.add("loading");
-  wmApplyBtn.disabled = true;
+      const mode = btn.getAttribute("data-preview-mode");
+      if (mode === "original") {
+        wmPreviewOriginal.style.display = "block";
+        wmPreviewWatermarked.style.display = "none";
+      } else {
+        wmPreviewOriginal.style.display = "none";
+        wmPreviewWatermarked.style.display = "block";
+      }
+    });
+  });
 
-  try {
-    // First, compute file hash to check against localStorage store
-    const fileHash = await hashFile(currentWMFile);
+  // Apply invisible watermark simulation
+  wmApplyBtn.addEventListener("click", async () => {
+    console.log("Watermark apply button clicked");
+    
+    if (!currentWMFile) {
+      console.log("No file selected, showing error");
+      wmDropzone.classList.add("drag-over");
+      setTimeout(() => wmDropzone.classList.remove("drag-over"), 600);
+      return;
+    }
+
+    const ownerId = wmOwnerInput.value.trim();
+    if (!ownerId) {
+      console.log("No owner ID provided");
+      wmOwnerInput.focus();
+      wmOwnerInput.classList.add("shake");
+      setTimeout(() => wmOwnerInput.classList.remove("shake"), 400);
+      return;
+    }
+
+    console.log("Starting watermark process for:", currentWMFile.name, "Owner:", ownerId);
+
+    // Start fake loading state
+    wmApplyBtn.classList.add("loading");
+    wmApplyBtn.disabled = true;
+
+    try {
+      // Compute file hash for local storage check
+      const fileHash = await hashFile(currentWMFile);
+      console.log("File hash computed:", fileHash);
     
     // Check if this image has already been watermarked (stored in localStorage)
     if (watermarkStore.has(fileHash)) {
@@ -468,70 +438,9 @@ wmApplyBtn.addEventListener("click", async () => {
       return;
     }
 
-    // Also check with backend for additional validation
-    const formDataDetect = new FormData();
-    formDataDetect.append("file", currentWMFile);
+    console.log("Proceeding with watermarking...");
 
-    console.log("Checking watermark detection with backend...");
-    const detectResponse = await fetch("http://localhost:8000/verify/detect", {
-      method: "POST",
-      body: formDataDetect,
-    });
-
-    if (!detectResponse.ok) {
-      const errorText = await detectResponse.text();
-      console.error("Backend detection error:", errorText);
-      throw new Error(`Failed to check for existing watermark: ${errorText}`);
-    }
-
-    const detection = await detectResponse.json();
-    console.log("Backend detection result:", detection);
-
-    // If backend also detects a watermark, show error and stop
-    if (detection.has_watermark) {
-      console.warn("Watermark detected - blocking re-watermarking");
-      wmApplyBtn.classList.remove("loading");
-      wmApplyBtn.disabled = false;
-
-      // Show error state
-      wmOwnerInput.classList.add("shake");
-      setTimeout(() => wmOwnerInput.classList.remove("shake"), 400);
-
-      // Create and show error popup
-      const errorDiv = document.createElement("div");
-      errorDiv.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background: rgba(185, 28, 28, 0.95);
-        color: #fecaca;
-        padding: 16px 20px;
-        border-radius: 12px;
-        border: 1px solid rgba(248, 113, 113, 0.8);
-        box-shadow: 0 0 30px rgba(185, 28, 28, 0.6);
-        max-width: 400px;
-        z-index: 10000;
-        font-size: 0.9rem;
-        animation: slideIn 0.3s ease-out;
-      `;
-      errorDiv.innerHTML = `
-        <div style="font-weight: 600; margin-bottom: 4px;">⚠️ Image Already Watermarked</div>
-        <div>${detection.message}</div>
-      `;
-      document.body.appendChild(errorDiv);
-
-      // Auto-remove after 5 seconds
-      setTimeout(() => {
-        errorDiv.style.animation = "slideOut 0.3s ease-out";
-        setTimeout(() => errorDiv.remove(), 300);
-      }, 5000);
-
-      return;
-    }
-    
-    console.log("No watermark detected - proceeding with watermarking");
-
-    // Now send to backend to actually embed the watermark
+    // Send to backend to embed the watermark
     const strength = Number(wmStrengthInput.value);
     // Map strength slider (1-100) to watermark strength (1-10)
     const watermarkStrength = Math.max(1, Math.min(10, Math.ceil(strength / 10)));
@@ -541,22 +450,61 @@ wmApplyBtn.addEventListener("click", async () => {
     formDataEmbed.append("owner_id", ownerId);
     formDataEmbed.append("strength", String(watermarkStrength));
 
-    const embedResponse = await fetch("http://localhost:8000/watermark/embed", {
-      method: "POST",
-      body: formDataEmbed,
-    });
-
-    if (!embedResponse.ok) {
-      const errorText = await embedResponse.text();
-      throw new Error(`Failed to embed watermark into image: ${errorText}`);
+    console.log("Sending watermark embed request to backend...");
+    console.log("API endpoint: http://127.0.0.1:8000/watermark/embed");
+    console.log("Form data: file=" + currentWMFile.name + ", owner_id=" + ownerId + ", strength=" + watermarkStrength);
+    
+    let embedResponse;
+    try {
+      embedResponse = await fetch("http://127.0.0.1:8000/watermark/embed", {
+        method: "POST",
+        body: formDataEmbed,
+      });
+      console.log("Fetch completed, got response object");
+    } catch (fetchError) {
+      console.error("FETCH ERROR:", fetchError);
+      console.error("Fetch error message:", fetchError.message);
+      throw new Error(`Network error contacting backend: ${fetchError.message}`);
     }
 
-    // Get the watermarked image blob
-    const watermarkedBlob = await embedResponse.blob();
+    console.log("Embed response status:", embedResponse.status);
+    console.log("Content-Type:", embedResponse.headers.get('content-type'));
+    
+    if (!embedResponse.ok) {
+      console.error("Response not OK, status:", embedResponse.status);
+      try {
+        const errorText = await embedResponse.text();
+        console.error("Backend error response:", errorText);
+        throw new Error(`Backend error: ${errorText}`);
+      } catch (e) {
+        throw new Error(`Backend returned status ${embedResponse.status}`);
+      }
+    }
+
+    // Get the watermarked image blob - ONLY read once!
+    console.log("About to read response as blob...");
+    let watermarkedBlob;
+    try {
+      watermarkedBlob = await embedResponse.blob();
+      console.log("Blob read successfully, size:", watermarkedBlob.size);
+      console.log("Blob type:", watermarkedBlob.type);
+    } catch (blobError) {
+      console.error("ERROR reading blob:", blobError);
+      console.error("Blob error message:", blobError.message);
+      throw new Error(`Failed to read response blob: ${blobError.message}`);
+    }
+    console.log("Received watermarked image blob, size:", watermarkedBlob.size);
+
+    if (!wmPreviewWatermarked) {
+      console.error("CRITICAL: wmPreviewWatermarked element is NULL!");
+      throw new Error("Preview image element not found in DOM");
+    }
 
     // Display the watermarked preview
     const watermarkedUrl = URL.createObjectURL(watermarkedBlob);
+    console.log("Setting watermarked preview src...");
     wmPreviewWatermarked.src = watermarkedUrl;
+    console.log("Watermarked preview displayed");
 
     // Store watermark metadata in localStorage
     watermarkStore.set(fileHash, {
@@ -577,12 +525,16 @@ wmApplyBtn.addEventListener("click", async () => {
     }
 
     // Activate watermarked view
+    const previewToggleButtons = document.querySelectorAll(
+      "[data-preview-mode]"
+    );
     previewToggleButtons.forEach((b) => {
       const mode = b.getAttribute("data-preview-mode");
       b.classList.toggle("chip-active", mode === "watermarked");
     });
-    wmPreviewOriginal.style.display = "none";
-    wmPreviewWatermarked.style.display = "block";
+    
+    if (wmPreviewOriginal) wmPreviewOriginal.style.display = "none";
+    if (wmPreviewWatermarked) wmPreviewWatermarked.style.display = "block";
 
     // End loading
     wmApplyBtn.classList.remove("loading");
@@ -628,6 +580,8 @@ wmApplyBtn.addEventListener("click", async () => {
     wmApplyBtn.disabled = false;
 
     console.error("Watermarking error:", error);
+    console.error("Error message:", error?.message);
+    console.error("Error stack:", error?.stack);
 
     // Show error notification
     const errorDiv = document.createElement("div");
@@ -674,6 +628,10 @@ wmApplyBtn.addEventListener("click", async () => {
     });
   }
 
+  } catch (error) {
+    console.error("CRITICAL ERROR in initWatermarkFunctionality:", error);
+    console.error("Stack:", error.stack);
+  }
 } // End of initWatermarkFunctionality
 
 // Call the function to initialize watermark functionality
@@ -701,7 +659,7 @@ const registerStatus = document.getElementById("register-status");
 
 async function fetchRegistryAbi() {
   try {
-    const res = await fetch("http://localhost:8000/registry/abi");
+    const res = await fetch("http://127.0.0.1:8000/registry/abi");
     if (!res.ok) {
       console.error("Failed to fetch registry ABI:", res.status);
       return null;
@@ -946,7 +904,7 @@ vfBtn.addEventListener("click", async () => {
     formData.append("file", currentVfFile);
 
     console.log("Verifying watermark with backend...");
-    const response = await fetch("http://localhost:8000/verify", {
+    const response = await fetch("http://127.0.0.1:8000/verify", {
       method: "POST",
       body: formData,
     });
@@ -1136,7 +1094,7 @@ smBtn.addEventListener("click", async () => {
     const formData = new FormData();
     formData.append("file", currentSmFile);
 
-    const response = await fetch("http://localhost:8000/metadata/strip", {
+    const response = await fetch("http://127.0.0.1:8000/metadata/strip", {
       method: "POST",
       body: formData,
     });

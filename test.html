@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Quick Test</title>
+</head>
+<body>
+  <h1>Drag and Drop Test</h1>
+  <div id="wm-dropzone" style="border: 2px solid blue; padding: 20px; cursor: pointer;">
+    <input type="file" id="wm-input" accept="image/*" hidden />
+    <p>Drag image here or click</p>
+  </div>
+  <p id="result">No file selected</p>
+
+  <script>
+    const wmDropzone = document.getElementById('wm-dropzone');
+    const wmInput = document.getElementById('wm-input');
+    const result = document.getElementById('result');
+
+    console.log('Elements found:', { wmDropzone, wmInput, result });
+
+    wmDropzone.addEventListener('click', () => {
+      console.log('Dropzone clicked, triggering file input');
+      wmInput.click();
+    });
+
+    wmInput.addEventListener('change', () => {
+      const file = wmInput.files?.[0];
+      console.log('File selected:', file);
+      if (file) {
+        result.textContent = `File: ${file.name} (${file.size} bytes)`;
+      }
+    });
+
+    wmDropzone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      wmDropzone.style.backgroundColor = 'lightblue';
+      console.log('Drag over');
+    });
+
+    wmDropzone.addEventListener('dragleave', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      wmDropzone.style.backgroundColor = '';
+      console.log('Drag leave');
+    });
+
+    wmDropzone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      wmDropzone.style.backgroundColor = '';
+      const file = e.dataTransfer.files?.[0];
+      console.log('File dropped:', file);
+      if (file && file.type.startsWith('image/')) {
+        result.textContent = `Dropped file: ${file.name} (${file.size} bytes)`;
+      }
+    });
+  </script>
+</body>
+</html>
