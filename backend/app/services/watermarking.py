@@ -1,4 +1,5 @@
 import io
+import numpy as np
 from PIL import Image
 
 def load_image_from_bytes(raw_bytes: bytes) -> Image.Image:
@@ -19,38 +20,38 @@ def embed_watermark_lsb(image: Image.Image, watermark_text: str, strength: int =
         image = image.convert('RGB')
     
     data = watermark_text + "@@@@"
+    # Convert string to binary string
     binary_data = ''.join(format(ord(i), '08b') for i in data)
     
     # Simple redundancy based on strength
     binary_data = binary_data * strength 
     
-    # Get pixel data as list
-    pixels = list(image.getdata())
-    width, height = image.size
+    # Convert image to numpy array for fast processing
+    img_array = np.array(image)
+    flat_array = img_array.flatten()
     
-    if len(binary_data) > len(pixels) * 3:  # 3 channels per pixel
-        raise ValueError(f"Image too small for this strength/text. Need {len(binary_data)} bits but only have {len(pixels) * 3} channels.")
+    total_pixels = flat_array.size
+    
+    if len(binary_data) > total_pixels:
+        raise ValueError(f"Image too small for this strength/text. Need {len(binary_data)} bits but only have {total_pixels} channels.")
 
-    # Modify pixels
-    modified_pixels = []
-    bit_index = 0
+    # Convert binary data to numpy array of integers (0 or 1)
+    bits = np.array([int(b) for b in binary_data], dtype=np.uint8)
     
-    for pixel in pixels:
-        r, g, b = pixel
-        new_pixel = [r, g, b]
-        
-        # Modify each channel if we have bits left
-        for channel in range(3):
-            if bit_index < len(binary_data):
-                # Clear LSB and set to watermark bit
-                new_pixel[channel] = (new_pixel[channel] & 0xFE) | int(binary_data[bit_index])
-                bit_index += 1
-        
-        modified_pixels.append(tuple(new_pixel))
+    # Vectorized embedding:
+    # 1. Clear LSB of target pixels (bitwise AND with 0xFE / 254)
+    # 2. Set LSB to data bit (bitwise OR)
+    target_slice = flat_array[:len(bits)]
+    target_slice[:] = (target_slice & 0xFE) | bits
     
-    # Create new image
-    watermarked_image = Image.new('RGB', (width, height))
-    watermarked_image.putdata(modified_pixels)
+    # Update the flat array with modified slice (done in-place above via slicing, but confirming)
+    flat_array[:len(bits)] = target_slice
+    
+    # Reshape back to image dimensions
+    reshaped_array = flat_array.reshape(img_array.shape)
+    
+    # Create new image from array
+    watermarked_image = Image.fromarray(reshaped_array.astype('uint8'), 'RGB')
     
     return watermarked_image, binary_data
 
@@ -60,19 +61,29 @@ def extract_watermark_lsb(image: Image.Image):
     if image.mode != 'RGB':
         image = image.convert('RGB')
     
-    pixels = list(image.getdata())
+    # Use numpy for fast reading
+    img_array = np.array(image)
+    flat_array = img_array.flatten()
     
-    # Extract LSBs from all channels
-    binary_data = ""
-    for pixel in pixels[:5000]:  # Limit to first 5000 pixels for performance
-        r, g, b = pixel
-        binary_data += str(r & 1)
-        binary_data += str(g & 1)
-        binary_data += str(b & 1)
+    # Limit to first 15000 values (5000 pixels * 3 channels) for performance 
+    # (Matches previous logic's 5000 pixel limit, but now parallelized reading)
+    search_limit = 15000
+    if flat_array.size > search_limit:
+        extract_slice = flat_array[:search_limit]
+    else:
+        extract_slice = flat_array
+        
+    # Vectorized extraction: Get LSBs
+    lsb_bits = extract_slice & 1
+    
+    # Convert to string
+    binary_data = "".join(lsb_bits.astype(str))
     
     # Try to decode
+    # Split into 8-bit chunks
     all_bytes = [binary_data[i:i+8] for i in range(0, len(binary_data), 8)]
     decoded = ""
+    
     for b in all_bytes:
         if len(b) == 8:
             try:
@@ -94,8 +105,8 @@ def strip_metadata_from_image(image: Image.Image) -> Image.Image:
     """
     # Create a new image with only pixel data
     # This removes all metadata, EXIF, encoding information, etc.
-    data = list(image.getdata())
-    image_without_metadata = Image.new(image.mode, image.size)
-    image_without_metadata.putdata(data)
+    # Using numpy is straightforward
+    data = np.array(image)
+    image_without_metadata = Image.fromarray(data)
     
     return image_without_metadata

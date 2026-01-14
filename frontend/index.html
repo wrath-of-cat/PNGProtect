@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
   <title>Invisible Watermarks. Visible Ownership.</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <link rel="stylesheet" href="style.css" />
 </head>
+
 <body>
   <!-- Animated gradient + particles background -->
   <div class="bg-gradient"></div>
@@ -81,12 +83,7 @@
           <!-- Owner ID text input -->
           <label class="field">
             <span class="field-label">Owner ID / Handle</span>
-            <input
-              type="text"
-              id="wm-owner-id"
-              maxlength="64"
-              placeholder="@creator, email, or UUID"
-            />
+            <input type="text" id="wm-owner-id" maxlength="64" placeholder="@creator, email, or UUID" />
           </label>
 
           <!-- Strength slider -->
@@ -95,13 +92,7 @@
               <span class="field-label">Watermark strength</span>
               <span id="wm-strength-label" class="field-label-soft">Medium</span>
             </div>
-            <input
-              type="range"
-              id="wm-strength"
-              min="1"
-              max="100"
-              value="60"
-            />
+            <input type="range" id="wm-strength" min="1" max="100" value="60" />
             <div class="field-scale">
               <span>Low</span>
               <span>High</span>
@@ -113,7 +104,7 @@
             <span class="btn-label">Apply Invisible Watermark</span>
             <span class="btn-spinner"></span>
           </button>
-  
+
           <p class="hint">
             This is a front-end simulation.
           </p>
@@ -123,10 +114,7 @@
         <div class="glass card">
           <h3>Preview</h3>
           <div class="preview-toggle-row">
-            <button
-              class="chip chip-active"
-              data-preview-mode="original"
-            >
+            <button class="chip chip-active" data-preview-mode="original">
               Original
             </button>
             <button class="chip" data-preview-mode="watermarked">
@@ -175,6 +163,9 @@
               <p class="drop-subtext">or click to browse</p>
             </div>
           </div>
+          <img id="vf-preview" class="preview-image"
+            style="margin: 1rem auto; display: none; max-height: 200px; width: 100%; object-fit: contain; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);"
+            alt="Verify Preview" />
 
           <button id="vf-btn" class="btn primary full">
             <span class="btn-label">Verify Watermark</span>
@@ -245,6 +236,9 @@
               <p class="drop-subtext">or click to browse</p>
             </div>
           </div>
+          <img id="det-preview" class="preview-image"
+            style="margin: 1rem auto; display: none; max-height: 200px; width: 100%; object-fit: contain; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);"
+            alt="Detection Preview" />
 
           <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin: 1rem 0;">
             <button id="det-full-btn" class="btn primary" style="flex: 1; min-width: 120px;">
@@ -280,13 +274,15 @@
             <div class="confidence-bar">
               <div id="det-confidence-fill" class="confidence-fill" style="width: 0%;"></div>
             </div>
-            <p id="det-confidence-level" style="font-size: 0.9rem; color: var(--text-soft); margin-top: 0.5rem; margin-bottom: 0;">
+            <p id="det-confidence-level"
+              style="font-size: 0.9rem; color: var(--text-soft); margin-top: 0.5rem; margin-bottom: 0;">
               Likelihood: Unknown
             </p>
           </div>
 
           <!-- Likelihood Badge -->
-          <div id="det-verdict-container" style="display: none; margin: 1.5rem 0; padding: 1rem; background: rgba(148, 163, 184, 0.1); border-radius: 12px; border-left: 4px solid var(--accent-blue);">
+          <div id="det-verdict-container"
+            style="display: none; margin: 1.5rem 0; padding: 1rem; background: rgba(148, 163, 184, 0.1); border-radius: 12px; border-left: 4px solid var(--accent-blue);">
             <div style="display: flex; align-items: center; gap: 0.75rem;">
               <span id="det-verdict-icon" style="font-size: 1.5rem;">❓</span>
               <div>
@@ -298,20 +294,26 @@
 
           <!-- Detected Techniques -->
           <div id="det-techniques-container" style="display: none; margin: 1.5rem 0;">
-            <h4 style="margin: 0 0 0.75rem 0; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-soft);">Detected Artifacts</h4>
+            <h4
+              style="margin: 0 0 0.75rem 0; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-soft);">
+              Detected Artifacts</h4>
             <div id="det-techniques-list" style="display: flex; flex-direction: column; gap: 0.5rem;"></div>
           </div>
 
           <!-- Forensic Explanation -->
-          <div id="det-explanation-container" style="display: none; margin: 1.5rem 0; padding: 1rem; background: rgba(168, 85, 247, 0.1); border-radius: 12px;">
+          <div id="det-explanation-container"
+            style="display: none; margin: 1.5rem 0; padding: 1rem; background: rgba(168, 85, 247, 0.1); border-radius: 12px;">
             <h4 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; color: var(--accent-purple);">Forensic Analysis</h4>
-            <p id="det-explanation-text" style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text-soft);"></p>
+            <p id="det-explanation-text"
+              style="margin: 0; font-size: 0.9rem; line-height: 1.6; color: var(--text-soft);"></p>
           </div>
 
           <!-- Technical Summary -->
-          <div id="det-technical-container" style="display: none; margin: 1.5rem 0; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 12px;">
+          <div id="det-technical-container"
+            style="display: none; margin: 1.5rem 0; padding: 1rem; background: rgba(59, 130, 246, 0.1); border-radius: 12px;">
             <h4 style="margin: 0 0 0.5rem 0; font-size: 0.95rem; color: var(--accent-blue);">Technical Details</h4>
-            <pre id="det-technical-text" style="margin: 0; font-size: 0.8rem; color: var(--text-soft); overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', monospace; line-height: 1.4;"></pre>
+            <pre id="det-technical-text"
+              style="margin: 0; font-size: 0.8rem; color: var(--text-soft); overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; font-family: 'Courier New', monospace; line-height: 1.4;"></pre>
           </div>
 
           <!-- Toggle Technical Details Button -->
@@ -327,15 +329,18 @@
           Our detection system uses a <strong>hybrid approach</strong> combining forensic analysis and machine learning:
         </p>
         <ul style="color: var(--text-soft); line-height: 1.8;">
-          <li><strong>Blur Detection:</strong> Analyzes Laplacian variance to detect image smoothing or blur effects.</li>
+          <li><strong>Blur Detection:</strong> Analyzes Laplacian variance to detect image smoothing or blur effects.
+          </li>
           <li><strong>Noise Inconsistency:</strong> Detects unnatural noise patterns that indicate post-processing.</li>
           <li><strong>Compression Artifacts:</strong> Identifies JPEG blocking and compression anomalies.</li>
           <li><strong>Edge Anomalies:</strong> Finds unusual edge density that suggests watermark removal.</li>
           <li><strong>Frequency Analysis:</strong> Uses FFT to detect frequency domain artifacts.</li>
-          <li><strong>ML Classification:</strong> Trained model uses 40+ statistical features for advanced detection.</li>
+          <li><strong>ML Classification:</strong> Trained model uses 40+ statistical features for advanced detection.
+          </li>
         </ul>
         <p style="margin-bottom: 0;">
-          The system provides a <strong>confidence score (0-100%)</strong> indicating the likelihood of watermark tampering, along with specific artifacts detected and human-readable explanations.
+          The system provides a <strong>confidence score (0-100%)</strong> indicating the likelihood of watermark
+          tampering, along with specific artifacts detected and human-readable explanations.
         </p>
       </div>
     </section>
@@ -416,7 +421,8 @@
           <div class="feature-icon">☑️</div>
           <h3>Invisible Watermarking</h3>
           <p>
-            Embed hidden ownership identifiers into images using LSB steganography. The watermark is imperceptible to the human eye while remaining machine-readable and extractable for verification purposes.
+            Embed hidden ownership identifiers into images using LSB steganography. The watermark is imperceptible to
+            the human eye while remaining machine-readable and extractable for verification purposes.
           </p>
         </article>
 
@@ -424,7 +430,8 @@
           <div class="feature-icon">🪪</div>
           <h3>Ownership Proof & Attribution</h3>
           <p>
-            Cryptographically link content to creators through encoded owner IDs, email addresses, or unique identifiers. Establish verifiable provenance and attribution chains for digital assets.
+            Cryptographically link content to creators through encoded owner IDs, email addresses, or unique
+            identifiers. Establish verifiable provenance and attribution chains for digital assets.
           </p>
         </article>
 
@@ -432,7 +439,8 @@
           <div class="feature-icon">🛡️</div>
           <h3>Tamper Detection & Integrity</h3>
           <p>
-            Automatically detect suspicious modifications when watermark patterns deviate from original values. Receive detailed confidence scores and tamper status reports for each verification.
+            Automatically detect suspicious modifications when watermark patterns deviate from original values. Receive
+            detailed confidence scores and tamper status reports for each verification.
           </p>
         </article>
 
@@ -440,7 +448,8 @@
           <div class="feature-icon">⚡</div>
           <h3>Configurable Strength Levels</h3>
           <p>
-            Fine-tune watermark robustness from 1-10. Higher strength = greater resilience to compression and edits, lower strength = minimal visual impact. Adapt to your specific use case requirements.
+            Fine-tune watermark robustness from 1-10. Higher strength = greater resilience to compression and edits,
+            lower strength = minimal visual impact. Adapt to your specific use case requirements.
           </p>
         </article>
 
@@ -448,7 +457,8 @@
           <div class="feature-icon">🔍</div>
           <h3>Real-Time Verification</h3>
           <p>
-            Instantly verify watermarks and recover owner IDs from any image file. Get immediate feedback on watermark presence, extraction confidence, and asset integrity status in real-time.
+            Instantly verify watermarks and recover owner IDs from any image file. Get immediate feedback on watermark
+            presence, extraction confidence, and asset integrity status in real-time.
           </p>
         </article>
 
@@ -456,7 +466,8 @@
           <div class="feature-icon">📦</div>
           <h3>Batch Processing Ready</h3>
           <p>
-            Integrate with production pipelines and asset management systems. Process thousands of images automatically, assigning unique identifiers while maintaining consistent quality and performance.
+            Integrate with production pipelines and asset management systems. Process thousands of images automatically,
+            assigning unique identifiers while maintaining consistent quality and performance.
           </p>
         </article>
 
@@ -464,7 +475,8 @@
           <div class="feature-icon">🌐</div>
           <h3>Public Verification API</h3>
           <p>
-            Allow anyone to verify content authenticity without private keys. Share public verification endpoints for transparency while maintaining creator privacy and control over sensitive metadata.
+            Allow anyone to verify content authenticity without private keys. Share public verification endpoints for
+            transparency while maintaining creator privacy and control over sensitive metadata.
           </p>
         </article>
 
@@ -472,7 +484,8 @@
           <div class="feature-icon">🧹</div>
           <h3>Metadata Stripping</h3>
           <p>
-            Remove EXIF data, color profiles, and all encoding metadata from images for privacy and clean distribution. Keep only essential pixel data while preserving image quality.
+            Remove EXIF data, color profiles, and all encoding metadata from images for privacy and clean distribution.
+            Keep only essential pixel data while preserving image quality.
           </p>
         </article>
 
@@ -480,7 +493,8 @@
           <div class="feature-icon">📊</div>
           <h3>Detailed Analytics</h3>
           <p>
-            Comprehensive reporting including match ratios, confidence scores, extraction data, and modification detection. Track watermark resilience across different compression formats and edits.
+            Comprehensive reporting including match ratios, confidence scores, extraction data, and modification
+            detection. Track watermark resilience across different compression formats and edits.
           </p>
         </article>
       </div>
@@ -490,7 +504,8 @@
     <section id="how-it-works" class="section">
       <div class="section-header">
         <h2>How it Works</h2>
-        <p>A sophisticated yet simple flow designed for creators, platforms, content managers, and verification tools.</p>
+        <p>A sophisticated yet simple flow designed for creators, platforms, content managers, and verification tools.
+        </p>
       </div>
 
       <div class="steps-grid">
@@ -498,7 +513,8 @@
           <div class="step-number">01</div>
           <h3>Select & Configure</h3>
           <p>
-            Upload your image and provide an owner ID, email, or unique identifier to embed. Choose watermark strength (1-10) based on your resilience requirements and quality constraints.
+            Upload your image and provide an owner ID, email, or unique identifier to embed. Choose watermark strength
+            (1-10) based on your resilience requirements and quality constraints.
           </p>
         </div>
 
@@ -506,7 +522,8 @@
           <div class="step-number">02</div>
           <h3>Embed Watermark</h3>
           <p>
-            Our LSB steganography algorithm embeds your identification data into the least significant bits of pixel values. The modification is imperceptible but robust enough to survive compression and minor edits.
+            Our LSB steganography algorithm embeds your identification data into the least significant bits of pixel
+            values. The modification is imperceptible but robust enough to survive compression and minor edits.
           </p>
         </div>
 
@@ -514,7 +531,8 @@
           <div class="step-number">03</div>
           <h3>Download & Distribute</h3>
           <p>
-            Receive your watermarked image as a PNG file. The watermark persists through storage, sharing, and distribution. Share freely knowing your ownership is encoded within.
+            Receive your watermarked image as a PNG file. The watermark persists through storage, sharing, and
+            distribution. Share freely knowing your ownership is encoded within.
           </p>
         </div>
 
@@ -522,7 +540,8 @@
           <div class="step-number">04</div>
           <h3>Verify Ownership</h3>
           <p>
-            Upload any image to the verification section. The system extracts and analyzes embedded watermarks, returning the recovered owner ID and confidence scores instantly.
+            Upload any image to the verification section. The system extracts and analyzes embedded watermarks,
+            returning the recovered owner ID and confidence scores instantly.
           </p>
         </div>
 
@@ -530,7 +549,8 @@
           <div class="step-number">05</div>
           <h3>Detect Modifications</h3>
           <p>
-            Receive detailed analysis of watermark integrity. See if the image is intact, slightly modified, or heavily tampered with based on pattern matching and deviation analysis.
+            Receive detailed analysis of watermark integrity. See if the image is intact, slightly modified, or heavily
+            tampered with based on pattern matching and deviation analysis.
           </p>
         </div>
 
@@ -538,15 +558,21 @@
           <div class="step-number">06</div>
           <h3>Manage at Scale</h3>
           <p>
-            Integrate our API into your workflow. Process thousands of images, track ownership chains, and maintain provenance records across your entire content library automatically.
+            Integrate our API into your workflow. Process thousands of images, track ownership chains, and maintain
+            provenance records across your entire content library automatically.
           </p>
         </div>
       </div>
 
-      <div class="workflow-info" style="margin-top: 3rem; padding: 2rem; background: rgba(96, 165, 250, 0.1); border: 1px solid rgba(96, 165, 250, 0.2); border-radius: 12px;">
+      <div class="workflow-info"
+        style="margin-top: 3rem; padding: 2rem; background: rgba(96, 165, 250, 0.1); border: 1px solid rgba(96, 165, 250, 0.2); border-radius: 12px;">
         <h3 style="margin-top: 0; color: #60a5fa;">Why LSB Steganography?</h3>
         <p style="margin-bottom: 0;">
-          Our platform uses Least Significant Bit (LSB) steganography because it offers the perfect balance between invisibility and robustness. By modifying only the least significant bits of pixel data, we achieve watermarks that are completely imperceptible to the human eye while remaining extractable by algorithms. This technique has proven effective across professional applications in digital forensics, content authentication, and copyright protection.
+          Our platform uses Least Significant Bit (LSB) steganography because it offers the perfect balance between
+          invisibility and robustness. By modifying only the least significant bits of pixel data, we achieve watermarks
+          that are completely imperceptible to the human eye while remaining extractable by algorithms. This technique
+          has proven effective across professional applications in digital forensics, content authentication, and
+          copyright protection.
         </p>
       </div>
     </section>
@@ -556,16 +582,13 @@
   <footer class="footer">
     <div class="footer-inner">
       <p>
-        PNGProtect is a conceptual invisible image watermarking & verification platform prototype for demonstration purposes only.
+        PNGProtect is a conceptual invisible image watermarking & verification platform prototype for demonstration
+        purposes only.
       <p class="footer-note">
         Built as a hackathon-style front-end demo.
       </p>
-      <a
-        href="https://github.com/ApurveKaranwal/PNGProtect"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="footer-link"
-      >
+      <a href="https://github.com/ApurveKaranwal/PNGProtect" target="_blank" rel="noopener noreferrer"
+        class="footer-link">
         GitHub repository
       </a>
     </div>
@@ -574,4 +597,5 @@
   <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
   <script src="script.js"></script>
 </body>
+
 </html>

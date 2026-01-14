@@ -111,6 +111,22 @@ async def embed_watermark(
         
         # Load image
         image = load_image_from_bytes(raw_bytes)
+
+        # CHECK FOR EXISTING WATERMARK (Feature Request)
+        # 1. Check if we have this image hash in our DB
+        image_hash = sha256_bytes(raw_bytes)
+        existing_record = store.get_by_image_hash(image_hash)
+        
+        # 2. Check if we can extract a watermark from the pixels
+        extracted_text_check, match_ratio_check = extract_watermark_lsb(image)
+        
+        # If either check is positive, block the request
+        if existing_record or (match_ratio_check > 0.6 and extracted_text_check != "Unknown"):
+             owner = existing_record.owner_id if existing_record else extracted_text_check
+             raise HTTPException(
+                 status_code=400, 
+                 detail=f"Image is already watermarked (Owner: {owner}). Cannot watermark again."
+             )
         
         # Embed watermark into image
         watermarked_image, binary_data = embed_watermark_lsb(image, owner_id, strength)
