@@ -1,59 +1,78 @@
-# 🛡️ PNGProtect
+# PNGProtect 🛡️  
+**Invisible Watermarking & Integrity Protection for PNG Images**
 
-**Professional invisible watermarking system with user authentication, dashboard management, and blockchain integration.**
+Protect PNG images from unauthorized reuse by embedding invisible, resilient watermarks and verifying image integrity through perceptual hashing. PNGProtect is designed for creators, developers, and researchers who want lightweight yet powerful image ownership protection.
 
-## ✨ Features
+[🌐 Live Demo](#) • [📦 GitHub Repository](#) • [📄 Research-Inspired](https://arxiv.org/abs/2003.06158)
 
-- **🔐 User Authentication** - JWT-like token system with role-based access
-- **🖼️ Invisible Watermarking** - Advanced steganography with adjustable strength (1-10 levels)
-- **📊 Dashboard Analytics** - User statistics, watermark history, and usage tracking
-- **🔍 Verification System** - Watermark detection with confidence scoring
-- **🧹 Metadata Stripping** - Privacy protection tool for removing image metadata
-- **⚡ Bulk Operations** - Process multiple images efficiently with templates
-- **🌐 Blockchain Integration** - MetaMask wallet connection for on-chain ownership registry
-- **📜 Smart Contracts** - Ethereum-based ownership registration system
+<br>
 
-## 🚀 Quick Start
+## Overview
 
-### Backend Setup
+**PNGProtect** is a security-focused image protection tool that embeds **invisible watermarks** into PNG images and verifies ownership using **perceptual hashing** techniques. The watermark survives common image transformations while remaining visually imperceptible.
+
+Unlike visible watermarks that degrade aesthetics, PNGProtect ensures **silent attribution** and **tamper detection** without affecting image quality.
+
+<br>
+
+## Core Principles
+
+- **Invisible by Design**  
+  Watermarks are embedded in the frequency domain and are not visible to the human eye.
+
+- **Resilient Protection**  
+  Designed to survive compression, resizing, minor edits, and format-preserving transformations.
+
+- **Ownership Verification**  
+  Detects whether an image has been modified or reused using perceptual hash comparison.
+
+- **Lightweight & Developer-Friendly**  
+  Simple CLI / script-based workflow with minimal dependencies.
+
+<br>
+
+## Features
+
+### 1. Invisible Watermark Embedding
+- Embeds a unique signature into PNG images
+- Does not affect visual quality
+- Resistant to:
+  - Resizing
+  - Minor cropping
+  - Compression artifacts
+
+### 2. Watermark Extraction & Verification
+- Extracts embedded watermark from protected images
+- Confirms whether an image belongs to the original owner
+- Detects tampering attempts
+
+### 3. Perceptual Hashing (pHash)
+- Generates perceptual hashes for images
+- Identifies visually similar or modified copies
+- Useful for duplicate and infringement detection
+
+### 4. Integrity Validation
+- Compares original and modified images
+- Flags unauthorized edits or distribution
+- Supports forensic-style analysis workflows
+
+<br>
+
+## Usage Guide
+
+### Step 1 — Embed Watermark
 ```bash
-cd PNGProtect/backend
-pip install -r requirements.txt
-uvicorn app.main:app --reload --host 127.0.0.1 --port 8000
+python embed.py --input image.png --output protected.png --key "your_secret_key"
 ```
 
-### Frontend Access
-Open `PNGProtect/frontend/index.html` in your browser or serve with any HTTP server.
-
-### Demo Login
-- **Email**: `demo@pngprotect.com`
-- **Password**: `demo123`
-
-### Wallet Connection
-- Install **MetaMask** browser extension
-- Click **"Connect Wallet"** to link your Ethereum wallet
-- Register watermark ownership on-chain after verification
-
-## 📁 Project Structure
-
+### Step 2 - Verify Image
+```bash
+python verify.py --input protected.png --key "your_secret_key"
 ```
-PNGProtect/
-├── backend/                 # FastAPI backend
-│   ├── app/
-│   │   ├── models/         # Data schemas
-│   │   ├── routes/         # API endpoints
-│   │   ├── services/       # Business logic
-│   │   ├── storage/        # Database layer
-│   │   └── main.py         # FastAPI app
-│   ├── contracts/          # Smart contracts (Solidity)
-│   └── requirements.txt    # Dependencies
-├── frontend/               # Web interface
-│   ├── index.html         # Home page with wallet integration
-│   ├── login.html         # Authentication
-│   ├── dashboard.html     # User dashboard
-│   ├── *.js              # JavaScript modules
-│   └── *.css             # Styling
-└── README.md             # This file
+
+### Step 3 - Similarity Check
+```bash
+python phash_compare.py image1.png image2.png
 ```
 
 ## 🔧 API Endpoints
@@ -101,8 +120,92 @@ PNGProtect/
 
 ## 📝 License
 
-MIT License - see [LICENSE](LICENSE) file for details.
+## Architecture
+        ┌──────────── Input PNG ─────────────┐
+                        │
+               ┌────────▼────────┐
+               │ Watermark Engine│  ◄─ Frequency-domain embedding
+               └────────┬────────┘
+                        │
+               ┌────────▼────────┐
+               │ PNG Encoder     │
+               └────────┬────────┘
+                        │
+               ┌────────▼────────┐
+               │ pHash Generator │ ◄─ Visual similarity detection
+               └────────┬────────┘
+                        │
+               ┌────────▼────────┐
+               │ Verification    │ ◄─ Ownership & tamper check
+               └─────────────────┘
 
----
+## Tech Stack
+| Layer        | Tools / Libraries           |
+| ------------ | --------------------------- |
+| Language     | Python                      |
+| Image Ops    | Pillow, OpenCV              |
+| Watermarking | Frequency-domain algorithms |
+| Hashing      | pHash (Perceptual Hashing)  |
+| Utilities    | NumPy, argparse             |
 
-**Built for digital content protection with blockchain-verified ownership** 🛡️⛓️
+## Security Considerations
+- Invisible Watermarks
+Embedded at a signal-processing level, not pixel overlays.
+
+- Tamper Detection
+Any destructive modification alters the watermark or perceptual hash.
+
+- False Positive Resistance
+Threshold-based pHash comparison avoids accidental matches.
+
+- Offline & Private
+No external servers, APIs, or cloud dependencies.
+
+## Folder Structure
+```bash
+.
+├── embed.py              # Watermark embedding logic
+├── verify.py             # Watermark extraction & verification
+├── phash_compare.py      # Perceptual hash comparison
+├── utils/                # Helper functions
+├── samples/              # Test images
+└── README.md
+```
+
+## Use Cases
+- 🎨 Digital artists protecting original artwork
+
+- 📸 Photographers tracking image reuse
+
+- 🧑‍💻 Developers building DRM or content verification tools
+
+- 🧪 Academic research on image watermarking
+
+- 🛡️ Copyright and IP protection workflows
+
+ ## Limitations
+ - Extremely aggressive cropping may reduce watermark recoverability
+ - Not designed to resist full re-drawing or AI regeneration
+ - PNG-focused (JPEG support may be added later)
+
+ ## Roadmap
+  - JPEG support
+
+  - Batch processing
+
+  - GUI interface
+
+  - Stronger multi-key watermarking
+
+  - Web-based verification demo
+
+ ## Refrences
+   - Invisible Watermarking Survey
+   - pHash–Perceptual Hashing
+   - [Digital Image Watermarking – Cox et al.]
+
+ ## License
+ MIT License © 2026
+ 
+ Built with ❤️ for creators and open-source contributors.
+ 
