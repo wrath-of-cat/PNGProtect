@@ -201,13 +201,13 @@ document.querySelectorAll("[data-scroll]").forEach((btn) => {
         p.y,
         p.r * 6
       );
-      
+
       // Use different colors based on theme
       const isLightMode = document.body.classList.contains('light-mode');
-      const particleColor = isLightMode 
+      const particleColor = isLightMode
         ? `rgba(37, 99, 235, ${p.alpha})` // Light blue for light mode
         : `rgba(96, 165, 250, ${p.alpha})`; // Lighter blue for dark mode
-      
+
       grd.addColorStop(0, particleColor);
       grd.addColorStop(1, "transparent");
       ctx.fillStyle = grd;
@@ -1277,7 +1277,8 @@ style.textContent = `
 document.head.appendChild(style);
 
 // Call the function to initialize verify functionality
-initVerifyFunctionality();
+// Duplicate call removed
+
 
 // =============================
 // Strip Metadata section logic
