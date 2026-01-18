@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Remove Metadata - PNGProtect</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+  <!-- Inline theme restoration to prevent flash -->
+  <script>
+    (function() {
+      const theme = localStorage.getItem('theme-mode') || 'dark-mode';
+      const bgColor = theme === 'light-mode' ? '#f8fafc' : '#050712';
+      
+      document.documentElement.style.backgroundColor = bgColor;
+      document.documentElement.style.background = bgColor;
+      document.body.style.backgroundColor = bgColor;
+      document.body.style.background = bgColor;
+      
+      if (theme === 'light-mode') {
+        document.documentElement.classList.add('light-mode');
+        document.body.classList.add('light-mode');
+      }
+    })();
+  </script>
+</head>
+
+<body>
+  <!-- Page transition overlay with blur effect -->
+  <div class="page-transition-overlay"></div>
+  <!-- Animated gradient + particles background -->
+  <div class="bg-gradient"></div>
+  <canvas id="bg-particles"></canvas>
+
+  <!-- Top navigation -->
+  <header class="top-nav">
+    <div class="logo">
+      <span class="logo-dot"></span>
+      <span>PNGProtect</span>
+    </div>
+    <nav class="nav-links">
+      <a href="index.html">Home</a>
+      <a href="watermark.html">Watermark</a>
+      <a href="ai-shield.html">AI Shield</a>
+      <a href="verify.html">Verify</a>
+      <a href="detect.html">Detect Tampering</a>
+      <a href="strip-metadata.html">Clean</a>
+    </nav>
+    <div class="user-area">
+      <!-- Wallet connection (blockchain feature) -->
+      <button id="connect-wallet-btn" class="btn ghost">Connect Wallet</button>
+      <button id="disconnect-wallet-btn" class="btn ghost" style="display:none;">Disconnect</button>
+      <span id="wallet-address" class="wallet-address">Not connected</span>
+      <!-- Light mode toggle -->
+      <button id="theme-toggle-btn" type="button" class="btn ghost theme-toggle"
+        title="Toggle light/dark mode">🌙</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- STRIP METADATA SECTION -->
+    <section id="strip" class="section">
+      <div class="section-header">
+        <h2>Remove Metadata</h2>
+        <p>Strip all metadata and encoding from your images for privacy and clean distribution.</p>
+      </div>
+
+      <div class="layout-grid">
+        <!-- Upload -->
+        <div class="glass card">
+          <h3>Upload Image to Clean</h3>
+
+          <div id="sm-dropzone" class="dropzone">
+            <input type="file" id="sm-input" accept="image/*" hidden />
+            <div class="dropzone-inner">
+              <span class="drop-icon">🧹</span>
+              <p>Drop an image to clean</p>
+              <p class="drop-subtext">or click to browse</p>
+            </div>
+          </div>
+
+          <button id="sm-btn" class="btn primary full">
+            <span class="btn-label">Remove Metadata</span>
+            <span class="btn-spinner"></span>
+          </button>
+
+          <p class="hint">
+            Removes all EXIF data, color profiles, and encoding metadata while preserving image quality.
+          </p>
+        </div>
+
+        <!-- Result card -->
+        <div class="glass card result-card">
+          <h3>Cleaning Result</h3>
+
+          <div id="sm-status" class="status-pill status-idle">
+            Waiting for an image…
+          </div>
+
+          <div class="result-grid">
+            <div class="result-item">
+              <span class="result-label">Original Size</span>
+              <span id="sm-original-size" class="result-value">–</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Cleaned Size</span>
+              <span id="sm-cleaned-size" class="result-value">–</span>
+            </div>
+            <div class="result-item">
+              <span class="result-label">Reduced by</span>
+              <span id="sm-reduction" class="result-value">–</span>
+            </div>
+          </div>
+
+          <button id="sm-download-btn" class="btn ghost full" disabled>
+            Download Cleaned Image
+          </button>
+
+          <p class="hint">
+            The cleaned image will be saved as PNG format for optimal quality.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <p>
+        PNGProtect is a conceptual invisible image watermarking & verification platform prototype for demonstration
+        purposes only.
+      <p class="footer-note">
+        Built as a hackathon-style front-end demo.
+      </p>
+      <a href="https://github.com/ApurveKaranwal/PNGProtect" target="_blank" rel="noopener noreferrer"
+        class="footer-link">
+        GitHub repository
+      </a>
+    </div>
+  </footer>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="script.js"></script>
+</body>
+
+</html>

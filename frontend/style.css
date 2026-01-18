@@ -164,6 +164,119 @@ body.light-mode .bg-gradient {
 }
 
 /* ===========================
+   PAGE TRANSITIONS & ANIMATIONS
+   =========================== */
+
+/* Smooth all background elements during theme transition */
+.bg-gradient,
+#bg-particles {
+  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ===========================
+   PAGE TRANSITION ANIMATION
+   =========================== */
+
+.page-transition-overlay {
+  position: fixed;
+  inset: 0;
+  background: var(--bg-main);
+  z-index: 9999;
+  pointer-events: none;
+  opacity: 0;
+  display: none;
+}
+
+/* Smooth theme transition for all elements */
+* {
+  transition-property: background-color, border-color, color, box-shadow;
+  transition-duration: 0.4s;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Prevent transition on transform and opacity for performance */
+*,
+*::before,
+*::after {
+  transition-property: background-color, border-color, color, box-shadow;
+}
+
+/* ===========================
+   THEME SWITCHING ANIMATIONS
+   =========================== */
+
+/* Enhanced glass effect transitions */
+.glass {
+  transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Button transitions */
+.btn {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Card entrance animations */
+@keyframes cardSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card, .feature-card, .step-card {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Hero section entrance animation */
+@keyframes heroFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.hero {
+  animation: heroFadeIn 0.8s cubic-bezier(0.4, 0, 0.2, 1) both;
+  animation-delay: 0.3s;
+}
+
+/* ===========================
+   HEADING GLOW EFFECT
+   =========================== */
+
+@keyframes headingGlow {
+  0%, 100% {
+    text-shadow: 0 0 10px rgba(59, 165, 250, 0.5),
+                 0 0 20px rgba(59, 165, 250, 0.3),
+                 0 0 30px rgba(168, 85, 247, 0.2);
+  }
+  50% {
+    text-shadow: 0 0 20px rgba(59, 165, 250, 0.8),
+                 0 0 30px rgba(59, 165, 250, 0.5),
+                 0 0 40px rgba(168, 85, 247, 0.4),
+                 0 0 50px rgba(34, 211, 238, 0.2);
+  }
+}
+
+.section-header h2 {
+  animation: headingGlow 3s ease-in-out infinite;
+}/* ===========================
    LAYOUT
    =========================== */
 

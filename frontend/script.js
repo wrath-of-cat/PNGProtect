@@ -50,11 +50,21 @@ function initThemeToggle() {
 
     if (isLight) {
       document.body.classList.remove('light-mode');
+      document.documentElement.classList.remove('light-mode');
+      document.documentElement.style.backgroundColor = '#050712';
+      document.documentElement.style.background = '#050712';
+      document.body.style.backgroundColor = '#050712';
+      document.body.style.background = '#050712';
       btn.textContent = '🌙';
       localStorage.setItem('theme-mode', 'dark-mode');
       console.log('🌙 -> Dark mode');
     } else {
       document.body.classList.add('light-mode');
+      document.documentElement.classList.add('light-mode');
+      document.documentElement.style.backgroundColor = '#f8fafc';
+      document.documentElement.style.background = '#f8fafc';
+      document.body.style.backgroundColor = '#f8fafc';
+      document.body.style.background = '#f8fafc';
       btn.textContent = '☀️';
       localStorage.setItem('theme-mode', 'light-mode');
       console.log('☀️ -> Light mode');
@@ -70,6 +80,11 @@ if (document.readyState === 'loading') {
   console.log('📄 DOM already loaded');
   initThemeToggle();
 }
+
+// =============================
+// Page Navigation
+// =============================
+// Navigation enabled without page transition animations
 
 // Simple notification system for the main page
 function showNotification(message, type = 'info') {
@@ -186,7 +201,14 @@ document.querySelectorAll("[data-scroll]").forEach((btn) => {
         p.y,
         p.r * 6
       );
-      grd.addColorStop(0, `rgba(96, 165, 250, ${p.alpha})`);
+      
+      // Use different colors based on theme
+      const isLightMode = document.body.classList.contains('light-mode');
+      const particleColor = isLightMode 
+        ? `rgba(37, 99, 235, ${p.alpha})` // Light blue for light mode
+        : `rgba(96, 165, 250, ${p.alpha})`; // Lighter blue for dark mode
+      
+      grd.addColorStop(0, particleColor);
       grd.addColorStop(1, "transparent");
       ctx.fillStyle = grd;
       ctx.beginPath();
