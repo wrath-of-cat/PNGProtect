@@ -8,18 +8,15 @@
   <link rel="stylesheet" href="style.css" />
   <!-- Inline theme restoration to prevent flash -->
   <script>
-    (function() {
+    (function () {
       const theme = localStorage.getItem('theme-mode') || 'dark-mode';
       const bgColor = theme === 'light-mode' ? '#f8fafc' : '#050712';
-      
+
       document.documentElement.style.backgroundColor = bgColor;
       document.documentElement.style.background = bgColor;
-      document.body.style.backgroundColor = bgColor;
-      document.body.style.background = bgColor;
-      
+
       if (theme === 'light-mode') {
         document.documentElement.classList.add('light-mode');
-        document.body.classList.add('light-mode');
       }
     })();
   </script>
@@ -60,14 +57,14 @@
   <main>
     <!-- STRIP METADATA SECTION -->
     <section id="strip" class="section">
-      <div class="section-header">
+      <div class="section-header animate-fade-in">
         <h2>Remove Metadata</h2>
         <p>Strip all metadata and encoding from your images for privacy and clean distribution.</p>
       </div>
 
       <div class="layout-grid">
         <!-- Upload -->
-        <div class="glass card">
+        <div class="glass card animate-slide-up stagger-1">
           <h3>Upload Image to Clean</h3>
 
           <div id="sm-dropzone" class="dropzone">
@@ -90,7 +87,7 @@
         </div>
 
         <!-- Result card -->
-        <div class="glass card result-card">
+        <div class="glass card result-card animate-slide-up stagger-2">
           <h3>Cleaning Result</h3>
 
           <div id="sm-status" class="status-pill status-idle">

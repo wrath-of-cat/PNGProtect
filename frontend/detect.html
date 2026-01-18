@@ -8,18 +8,15 @@
   <link rel="stylesheet" href="style.css" />
   <!-- Inline theme restoration to prevent flash -->
   <script>
-    (function() {
+    (function () {
       const theme = localStorage.getItem('theme-mode') || 'dark-mode';
       const bgColor = theme === 'light-mode' ? '#f8fafc' : '#050712';
-      
+
       document.documentElement.style.backgroundColor = bgColor;
       document.documentElement.style.background = bgColor;
-      document.body.style.backgroundColor = bgColor;
-      document.body.style.background = bgColor;
-      
+
       if (theme === 'light-mode') {
         document.documentElement.classList.add('light-mode');
-        document.body.classList.add('light-mode');
       }
     })();
   </script>
@@ -60,14 +57,14 @@
   <main>
     <!-- DETECT TAMPERING SECTION -->
     <section id="detect" class="section">
-      <div class="section-header">
+      <div class="section-header animate-fade-in">
         <h2>Detect Watermark Tampering</h2>
         <p>Analyze if an image has been tampered with or if the watermark has been removed.</p>
       </div>
 
       <div class="layout-grid">
         <!-- Upload & Analysis Controls -->
-        <div class="glass card">
+        <div class="glass card animate-slide-up stagger-1">
           <h3>Upload Image to Analyze</h3>
 
           <div id="det-dropzone" class="dropzone">
@@ -100,7 +97,7 @@
         </div>
 
         <!-- Results Display -->
-        <div class="glass card result-card">
+        <div class="glass card result-card animate-slide-up stagger-2">
           <h3>Tampering Analysis Results</h3>
 
           <div id="det-status" class="status-pill status-idle">

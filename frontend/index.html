@@ -8,18 +8,15 @@
   <link rel="stylesheet" href="style.css" />
   <!-- Inline theme restoration to prevent flash -->
   <script>
-    (function() {
+    (function () {
       const theme = localStorage.getItem('theme-mode') || 'dark-mode';
       const bgColor = theme === 'light-mode' ? '#f8fafc' : '#050712';
-      
+
       document.documentElement.style.backgroundColor = bgColor;
       document.documentElement.style.background = bgColor;
-      document.body.style.backgroundColor = bgColor;
-      document.body.style.background = bgColor;
-      
+
       if (theme === 'light-mode') {
         document.documentElement.classList.add('light-mode');
-        document.body.classList.add('light-mode');
       }
     })();
   </script>
@@ -92,10 +89,14 @@
 
       <div class="glass card" style="max-width: 900px; margin: 0 auto;">
         <p style="font-size: 1.05rem; line-height: 1.8; color: var(--text-soft);">
-          PNGProtect is a comprehensive platform for embedding invisible watermarks into images and verifying their authenticity. Our technology uses advanced steganography techniques to encode ownership information directly into image data without affecting visual quality or appearance.
+          PNGProtect is a comprehensive platform for embedding invisible watermarks into images and verifying their
+          authenticity. Our technology uses advanced steganography techniques to encode ownership information directly
+          into image data without affecting visual quality or appearance.
         </p>
         <p style="font-size: 1.05rem; line-height: 1.8; color: var(--text-soft);">
-          Whether you're a content creator protecting your work, a platform managing user-generated content, or a forensics professional investigating image authenticity, PNGProtect provides the tools you need to establish provenance, detect tampering, and prove ownership at scale.
+          Whether you're a content creator protecting your work, a platform managing user-generated content, or a
+          forensics professional investigating image authenticity, PNGProtect provides the tools you need to establish
+          provenance, detect tampering, and prove ownership at scale.
         </p>
       </div>
     </section>
@@ -255,8 +256,7 @@
         </div>
       </div>
 
-      <div class="workflow-info"
-        style="margin-top: 3rem; padding: 2rem; background: rgba(96, 165, 250, 0.1); border: 1px solid rgba(96, 165, 250, 0.2); border-radius: 12px;">
+      <div class="workflow-info">
         <h3 style="margin-top: 0; color: #60a5fa;">Why LSB Steganography?</h3>
         <p style="margin-bottom: 0;">
           Our platform uses Least Significant Bit (LSB) steganography because it offers the perfect balance between
